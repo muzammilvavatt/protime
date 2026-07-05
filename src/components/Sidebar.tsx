@@ -20,7 +20,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <aside 
-      className={`relative bg-zinc-950/80 backdrop-blur-xl border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out z-10 ${
+      className={`relative bg-[#0a0a0a]/90 backdrop-blur-xl border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out z-10 ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
@@ -71,17 +71,12 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
 
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`flex items-center w-full text-zinc-500 hover:text-zinc-300 hover:bg-white/5 rounded-lg transition-colors ${
-            isCollapsed ? "justify-center py-3" : "px-3 py-2.5"
-          }`}
+          className={`flex items-center justify-center w-full text-zinc-500 hover:text-zinc-300 hover:bg-white/5 rounded-lg transition-colors py-3`}
         >
           {isCollapsed ? (
             <ChevronRight className="w-5 h-5 shrink-0" />
           ) : (
-            <>
-              <ChevronLeft className="w-5 h-5 shrink-0 mr-3" />
-              <span className="font-medium text-sm whitespace-nowrap">Collapse Menu</span>
-            </>
+            <ChevronLeft className="w-5 h-5 shrink-0" />
           )}
         </button>
       </div>
