@@ -7,7 +7,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900">
+    <div className="h-screen overflow-hidden bg-[#F8FAFC] flex text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900">
       <Sidebar isAdmin={isAdmin} />
 
       {/* Main Content */}
