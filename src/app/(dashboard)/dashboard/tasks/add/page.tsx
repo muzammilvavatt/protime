@@ -20,23 +20,23 @@ export default async function AddTaskPage() {
     <div className="space-y-6 max-w-3xl mx-auto pb-10">
       <div className="flex items-center space-x-4">
         <Link href="/dashboard/tasks">
-          <Button variant="outline" size="icon" className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800">
+          <Button variant="outline" size="icon" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Assign Task</h2>
-          <p className="text-zinc-400">Delegate work to your team members.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Assign Task</h2>
+          <p className="text-slate-500">Delegate work to your team members.</p>
         </div>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <CheckSquare className="w-5 h-5 mr-2 text-blue-500" />
+      <Card className="bg-white border-slate-200 text-slate-900 shadow-sm rounded-xl">
+        <CardHeader className="border-b border-slate-100 pb-4">
+          <CardTitle className="flex items-center text-lg font-bold">
+            <CheckSquare className="w-5 h-5 mr-2 text-blue-600" />
             Task Details
           </CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardDescription className="text-slate-500">
             Define the scope, priority, and who is responsible.
           </CardDescription>
         </CardHeader>

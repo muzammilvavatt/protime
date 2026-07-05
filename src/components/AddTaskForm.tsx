@@ -25,32 +25,32 @@ export function AddTaskForm({ projects, employees }: { projects: any[], employee
 
   return (
     <form action={formAction}>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pt-6">
         {state?.error && (
-          <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md border border-red-500/20">
+          <div className="p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
             {state.error}
           </div>
         )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 col-span-1 md:col-span-2">
-            <Label htmlFor="name" className="text-zinc-300">Task Title *</Label>
+            <Label htmlFor="name" className="text-slate-700 font-medium">Task Title *</Label>
             <Input
               id="name"
               name="name"
               placeholder="e.g. Conduct Initial Site Survey"
               required
-              className="bg-zinc-950 border-zinc-800 focus-visible:ring-blue-500"
+              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="projectId" className="text-zinc-300">Project *</Label>
+            <Label htmlFor="projectId" className="text-slate-700 font-medium">Project *</Label>
             <select
               id="projectId"
               name="projectId"
               required
-              className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-zinc-100"
+              className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
             >
               <option value="">Select a Project...</option>
               {projects.map(p => (
@@ -58,17 +58,17 @@ export function AddTaskForm({ projects, employees }: { projects: any[], employee
               ))}
             </select>
             {projects.length === 0 && (
-              <p className="text-xs text-amber-500 mt-1">Please create a project first!</p>
+              <p className="text-xs text-amber-600 mt-1">Please create a project first!</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-zinc-300">Category *</Label>
+            <Label htmlFor="category" className="text-slate-700 font-medium">Category *</Label>
             <select
               id="category"
               name="category"
               required
-              className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-zinc-100"
+              className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
             >
               <option value="">Select Category...</option>
               {TASK_CATEGORIES.map(c => (
@@ -78,12 +78,12 @@ export function AddTaskForm({ projects, employees }: { projects: any[], employee
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assigneeId" className="text-zinc-300">Assign To *</Label>
+            <Label htmlFor="assigneeId" className="text-slate-700 font-medium">Assign To *</Label>
             <select
               id="assigneeId"
               name="assigneeId"
               required
-              className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-zinc-100"
+              className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
             >
               <option value="">Select Employee...</option>
               {employees.map(e => (
@@ -93,11 +93,11 @@ export function AddTaskForm({ projects, employees }: { projects: any[], employee
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="priority" className="text-zinc-300">Priority</Label>
+            <Label htmlFor="priority" className="text-slate-700 font-medium">Priority</Label>
             <select
               id="priority"
               name="priority"
-              className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-zinc-100"
+              className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
             >
               <option value="MEDIUM">Medium</option>
               <option value="LOW">Low</option>
@@ -107,37 +107,36 @@ export function AddTaskForm({ projects, employees }: { projects: any[], employee
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="deadline" className="text-zinc-300">Deadline</Label>
+            <Label htmlFor="deadline" className="text-slate-700 font-medium">Deadline</Label>
             <Input
               id="deadline"
               name="deadline"
               type="date"
-              className="bg-zinc-950 border-zinc-800 focus-visible:ring-blue-500 block text-white"
-              style={{ colorScheme: "dark" }}
+              className="bg-white border-slate-300 focus-visible:ring-blue-500 block text-slate-900"
             />
           </div>
           
           <div className="space-y-2 col-span-1 md:col-span-2">
-            <Label htmlFor="notes" className="text-zinc-300">Task Notes</Label>
+            <Label htmlFor="notes" className="text-slate-700 font-medium">Task Notes</Label>
             <textarea
               id="notes"
               name="notes"
               rows={4}
-              className="flex w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-zinc-100 placeholder:text-zinc-500"
+              className="flex w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900 placeholder:text-slate-400"
               placeholder="Instructions for the employee..."
             />
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end space-x-4 border-t border-zinc-800 pt-6">
+      <CardFooter className="flex justify-end space-x-4 border-t border-slate-100 pt-6 bg-slate-50 rounded-b-xl">
         <Link href="/dashboard/tasks">
-          <Button type="button" variant="ghost" className="hover:bg-zinc-800">
+          <Button type="button" variant="ghost" className="hover:bg-slate-200 text-slate-700">
             Cancel
           </Button>
         </Link>
         <Button 
           type="submit" 
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
           disabled={projects.length === 0 || employees.length === 0 || isPending}
         >
           {isPending ? "Assigning..." : "Assign Task"}

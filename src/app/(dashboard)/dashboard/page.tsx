@@ -12,62 +12,62 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
+        <Card className="bg-white border-slate-200 shadow-sm text-slate-900 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Total Projects</CardTitle>
-            <FolderKanban className="w-4 h-4 text-blue-500" />
+            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Projects</CardTitle>
+            <FolderKanban className="w-5 h-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{projectCount}</div>
-            <p className="text-xs text-zinc-500 mt-1">Active construction sites</p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900">{projectCount}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Active construction sites</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
+        <Card className="bg-white border-slate-200 shadow-sm text-slate-900 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Total Tasks</CardTitle>
-            <CheckSquare className="w-4 h-4 text-green-500" />
+            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Tasks</CardTitle>
+            <CheckSquare className="w-5 h-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{taskCount}</div>
-            <p className="text-xs text-zinc-500 mt-1">Across all projects</p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900">{taskCount}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Across all projects</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
+        <Card className="bg-white border-slate-200 shadow-sm text-slate-900 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Pending Tasks</CardTitle>
-            <AlertCircle className="w-4 h-4 text-amber-500" />
+            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Pending Tasks</CardTitle>
+            <AlertCircle className="w-5 h-5 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingTaskCount}</div>
-            <p className="text-xs text-zinc-500 mt-1">Requires attention</p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900">{pendingTaskCount}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Requires attention</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
+        <Card className="bg-white border-slate-200 shadow-sm text-slate-900 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Employees</CardTitle>
-            <Users className="w-4 h-4 text-purple-500" />
+            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Employees</CardTitle>
+            <Users className="w-5 h-5 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employeeCount}</div>
-            <p className="text-xs text-zinc-500 mt-1">Registered team members</p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900">{employeeCount}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Registered team members</p>
           </CardContent>
         </Card>
 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-zinc-900 border-zinc-800 text-zinc-100 col-span-1 lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+        <Card className="bg-white border-slate-200 shadow-sm text-slate-900 col-span-1 lg:col-span-2 rounded-xl">
+          <CardHeader className="border-b border-slate-100 pb-4">
+            <CardTitle className="text-lg font-bold text-slate-800">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-sm text-zinc-400 text-center py-12 border border-dashed border-zinc-800 rounded-lg">
+          <CardContent className="pt-6">
+            <div className="text-sm text-slate-500 text-center py-12 border border-dashed border-slate-300 rounded-lg bg-slate-50">
               No recent activity to display. Start by creating a project!
             </div>
           </CardContent>
