@@ -5,7 +5,7 @@ import { getSession } from "./lib/session";
 const protectedRoutes = ["/dashboard"];
 const publicRoutes = ["/login"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   
   // Quick check for protected vs public routes prefix
