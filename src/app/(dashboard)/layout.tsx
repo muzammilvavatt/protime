@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 shadow-sm relative z-10">
+        <header className="h-16 flex items-center justify-between px-4 pl-16 md:px-8 bg-white border-b border-slate-200 shadow-sm relative z-10">
           <h1 className="text-xl font-bold tracking-tight text-slate-800">Workspace</h1>
           <div className="flex items-center space-x-4">
             <div className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs font-semibold text-slate-600">

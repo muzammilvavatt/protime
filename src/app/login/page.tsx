@@ -38,9 +38,8 @@ export default function LoginPage() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="admin@consultancy.com"
                 required
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus-visible:ring-blue-500"
+                className="bg-white border-slate-300 text-slate-900 focus-visible:ring-blue-500"
               />
             </div>
             <div className="space-y-2">
