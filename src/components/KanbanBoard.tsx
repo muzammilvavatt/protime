@@ -144,7 +144,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: Task[] }) {
                                     : "text-slate-400"
                                 }`}>
                                   <Clock className="w-3 h-3 mr-1" />
-                                  {new Date(task.deadline).toLocaleDateString()}
+                                  {new Date(task.deadline).toISOString().split('T')[0]}
                                 </div>
                               )}
                             </div>
