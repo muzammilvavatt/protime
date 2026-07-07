@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, CheckSquare, Clock, User, FileText, Download } from "lucide-react";
+import { ArrowLeft, CheckSquare, FileText, Download } from "lucide-react";
 import { notFound } from "next/navigation";
 import { FileUpload } from "@/components/FileUpload";
-import { updateTaskStatusAction } from "@/actions/task.actions";
+import { TaskActivityFeed } from "@/components/TaskActivityFeed";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +19,12 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
   });
 
   if (!task) notFound();
+
+  const activities = await prisma.activityLog.findMany({
+    where: { entityId: id, entityType: "TASK" },
+    orderBy: { createdAt: "asc" },
+    include: { user: true }
+  });
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -58,7 +64,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                 <div>
                   <span className="text-slate-500 font-medium block">Deadline</span>
                   <span className="font-semibold">
-                    {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No deadline"}
+                    {task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : "No deadline"}
                   </span>
                 </div>
                 <div>
@@ -82,30 +88,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 text-slate-900 shadow-sm rounded-xl">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="text-lg font-bold">Update Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <form action={updateTaskStatusAction.bind(null, task.id)} className="flex items-end space-x-4">
-                <div className="flex-1 space-y-2">
-                  <label className="text-xs text-slate-500 uppercase font-semibold">Status</label>
-                  <select
-                    name="status"
-                    defaultValue={task.status}
-                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
-                  >
-                    <option value="PENDING">Pending (0%)</option>
-                    <option value="IN_PROGRESS">In Progress (50%)</option>
-                    <option value="COMPLETED">Completed (100%)</option>
-                  </select>
-                </div>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-10">
-                  Save Update
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          <TaskActivityFeed taskId={task.id} activities={activities} />
         </div>
 
         {/* Right Column: Files */}
