@@ -65,3 +65,19 @@ export async function updateTaskStatusAction(id: string, formData: FormData) {
   revalidatePath("/dashboard");
   redirect("/dashboard/tasks");
 }
+
+export async function updateTaskStatusDragAction(id: string, status: string) {
+  let progress = 0;
+  if (status === "COMPLETED") progress = 100;
+  if (status === "IN_PROGRESS") progress = 50;
+  if (status === "PENDING") progress = 0;
+
+  await prisma.task.update({
+    where: { id },
+    data: { status, progress },
+  });
+  
+  revalidatePath("/dashboard/tasks");
+  revalidatePath("/dashboard");
+  // Don't redirect for drag and drop actions!
+}
