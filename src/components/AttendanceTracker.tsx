@@ -62,7 +62,7 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
           <div className="text-center space-y-4">
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 inline-block w-full">
               <span className="text-xs text-blue-600 font-semibold uppercase tracking-wider block mb-1">Clocked In At</span>
-              <span className="text-2xl font-bold text-blue-900">{formatTime(todayRecord.clockIn)}</span>
+              <span className="text-2xl font-bold text-blue-900" suppressHydrationWarning>{formatTime(todayRecord.clockIn)}</span>
               {todayRecord.status === "LATE" && (
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                   LATE
@@ -93,11 +93,11 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
             <div className="grid grid-cols-2 gap-4 text-left border-t border-slate-100 pt-4 mt-4">
               <div>
                 <span className="text-xs text-slate-500 font-medium block">Clock In</span>
-                <span className="font-semibold">{formatTime(todayRecord.clockIn)}</span>
+                <span className="font-semibold" suppressHydrationWarning>{formatTime(todayRecord.clockIn)}</span>
               </div>
               <div>
                 <span className="text-xs text-slate-500 font-medium block">Clock Out</span>
-                <span className="font-semibold">{formatTime(todayRecord.clockOut)}</span>
+                <span className="font-semibold" suppressHydrationWarning>{formatTime(todayRecord.clockOut)}</span>
               </div>
             </div>
           </div>
