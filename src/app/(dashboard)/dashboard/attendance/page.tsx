@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -161,6 +161,3 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
     </div>
   );
 }
-
-// Ensure AlertCircle is imported if used (added here to fix potential missing import)
-import { AlertCircle } from "lucide-react";
