@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AttendanceDatePicker } from "@/components/AttendanceDatePicker";
 
 export default async function AttendanceAdminPage(props: { searchParams?: Promise<{ date?: string }> }) {
   const session = await getSession();
@@ -74,20 +75,7 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
           <p className="text-slate-500">Track employee clock-ins and working hours.</p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
-          <CalendarIcon className="w-4 h-4 text-slate-500 ml-2" />
-          <form className="flex">
-            <input 
-              type="date" 
-              name="date" 
-              defaultValue={dateStr}
-              className="border-0 bg-transparent text-sm focus:ring-0 text-slate-700 font-medium cursor-pointer"
-              onChange={(e) => {
-                e.target.form?.submit();
-              }}
-            />
-          </form>
-        </div>
+        <AttendanceDatePicker defaultValue={dateStr} />
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
