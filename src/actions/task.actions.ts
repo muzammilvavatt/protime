@@ -169,6 +169,21 @@ export async function updateTaskStatusDragAction(id: string, status: string) {
   revalidatePath("/dashboard");
 }
 
+export async function deleteTaskAction(id: string) {
+  const session = await getSession();
+  
+  if (session?.user?.role !== "ADMIN") {
+    return { error: "Unauthorized" };
+  }
+
+  await prisma.task.delete({
+    where: { id }
+  });
+
+  revalidatePath("/dashboard/tasks");
+  redirect("/dashboard/tasks");
+}
+
 export async function addTaskCommentAction(taskId: string, formData: FormData) {
   const text = formData.get("text") as string;
   const session = await getSession();

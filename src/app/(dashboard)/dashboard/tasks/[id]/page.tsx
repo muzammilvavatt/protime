@@ -7,6 +7,9 @@ import { notFound } from "next/navigation";
 import { FileUpload } from "@/components/FileUpload";
 import { TaskActivityFeed } from "@/components/TaskActivityFeed";
 
+import { getSession } from "@/lib/session";
+import { DeleteTaskButton } from "@/components/DeleteTaskButton";
+
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const task = await prisma.task.findUnique({
@@ -20,6 +23,9 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
   if (!task) notFound();
 
+  const session = await getSession();
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const activities = await prisma.activityLog.findMany({
     where: { entityId: id, entityType: "TASK" },
     orderBy: { createdAt: "asc" },
@@ -28,16 +34,19 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      <div className="flex items-center space-x-4">
-        <Link href="/dashboard/tasks">
-          <Button variant="outline" size="icon" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{task.name}</h2>
-          <p className="text-slate-500">Project: {task.project.name}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link href="/dashboard/tasks">
+            <Button variant="outline" size="icon" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{task.name}</h2>
+            <p className="text-slate-500">Project: {task.project.name}</p>
+          </div>
         </div>
+        {isAdmin && <DeleteTaskButton taskId={task.id} />}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
