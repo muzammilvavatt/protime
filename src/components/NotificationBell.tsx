@@ -40,7 +40,7 @@ export async function NotificationBell() {
                 <div key={n.id} className={`p-4 hover:bg-slate-50 transition-colors ${!n.isRead ? 'bg-blue-50/50' : ''}`}>
                   <p className="text-sm text-slate-800 font-medium leading-snug">{n.message}</p>
                   <span className="text-xs text-slate-400 mt-2 block">
-                    {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(n.createdAt).toISOString().replace('T', ' ').substring(0, 16)}
                   </span>
                 </div>
               ))}

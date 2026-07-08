@@ -50,7 +50,7 @@ export function TaskActivityFeed({ taskId, activities }: { taskId: string, activ
                   <div className="flex items-baseline space-x-2">
                     <span className="text-xs font-bold text-slate-700">{activity.user.name}</span>
                     <span className="text-[10px] text-slate-400">
-                      {new Date(activity.createdAt).toLocaleString()}
+                      {new Date(activity.createdAt).toISOString().replace('T', ' ').substring(0, 16)}
                     </span>
                   </div>
                   <div className="bg-white border border-slate-200 text-slate-700 text-sm p-3 rounded-tr-xl rounded-b-xl shadow-sm w-fit max-w-[90%]">
@@ -66,7 +66,7 @@ export function TaskActivityFeed({ taskId, activities }: { taskId: string, activ
                     <span className="font-semibold text-slate-600 mr-1">{activity.user.name}</span>
                     {activity.details?.toLowerCase()}
                     <span className="ml-2 text-[10px] text-slate-400">
-                      {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(activity.createdAt).toISOString().substring(11, 16)}
                     </span>
                   </div>
                 </div>
