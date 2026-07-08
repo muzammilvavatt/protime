@@ -1,21 +1,22 @@
-import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { getNotificationsAction } from "@/actions/notification.actions";
 
-export async function NotificationBell() {
-  const session = await getSession();
-  
-  if (!session?.user?.id) return null;
+export function NotificationBell() {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const notifications = await prisma.notification.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 5
-  });
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  useEffect(() => {
+    async function fetchNotifs() {
+      const res = await getNotificationsAction();
+      setNotifications(res.notifications);
+      setUnreadCount(res.notifications.filter((n: any) => !n.isRead).length);
+    }
+    fetchNotifs();
+  }, []);
 
   return (
     <Popover>
@@ -39,7 +40,7 @@ export async function NotificationBell() {
               {notifications.map(n => (
                 <div key={n.id} className={`p-4 hover:bg-slate-50 transition-colors ${!n.isRead ? 'bg-blue-50/50' : ''}`}>
                   <p className="text-sm text-slate-800 font-medium leading-snug">{n.message}</p>
-                  <span className="text-xs text-slate-400 mt-2 block">
+                  <span className="text-xs text-slate-400 mt-2 block" suppressHydrationWarning>
                     {new Date(n.createdAt).toISOString().replace('T', ' ').substring(0, 16)}
                   </span>
                 </div>
