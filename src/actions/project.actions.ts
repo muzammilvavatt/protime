@@ -33,8 +33,18 @@ export async function createProjectAction(prevState: any, formData: FormData) {
     deadline = new Date(deadlineStr);
   }
 
+  const workflowStepsStr = formData.get("workflowSteps") as string;
+  let workflowSteps = [];
+  if (workflowStepsStr) {
+    try {
+      workflowSteps = JSON.parse(workflowStepsStr);
+    } catch (e) {
+      console.error("Failed to parse workflow steps", e);
+    }
+  }
+
   try {
-    await prisma.project.create({
+    const project = await prisma.project.create({
       data: {
         name,
         clientName,
@@ -48,6 +58,31 @@ export async function createProjectAction(prevState: any, formData: FormData) {
         deadline,
       },
     });
+
+    // Create the workflow tasks sequentially
+    let previousTaskId = null;
+    for (const step of workflowSteps) {
+      const task = await prisma.task.create({
+        data: {
+          name: step.name,
+          category: step.category,
+          priority: "MEDIUM",
+          projectId: project.id,
+          dependsOnId: previousTaskId,
+        }
+      });
+      
+      // Assign the employee
+      await prisma.taskAssignee.create({
+        data: {
+          taskId: task.id,
+          userId: step.assigneeId
+        }
+      });
+
+      previousTaskId = task.id;
+    }
+
   } catch (error) {
     console.error(error);
     return { error: "Failed to create project" };
