@@ -69,13 +69,21 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Attendance Log</h2>
           <p className="text-slate-500">Track employee clock-ins and working hours.</p>
         </div>
 
-        <AttendanceDatePicker defaultValue={dateStr} />
+        <div className="flex items-center space-x-3">
+          <Link href="/dashboard/attendance/reports">
+            <Button variant="outline" className="bg-white border-blue-200 text-blue-700 hover:bg-blue-50">
+              <CalendarIcon className="w-4 h-4 mr-2" />
+              View Period Report
+            </Button>
+          </Link>
+          <AttendanceDatePicker defaultValue={dateStr} />
+        </div>
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
