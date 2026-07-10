@@ -4,112 +4,113 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { TaskDistributionChart } from "@/components/charts/TaskDistributionChart";
 import { EmployeeWorkloadChart } from "@/components/charts/EmployeeWorkloadChart";
-import { AttendanceTracker } from "@/components/AttendanceTracker";
-import { DailyChecklist } from "@/components/DailyChecklist";
+import { EmployeeDashboard } from "@/components/EmployeeDashboard";
 
 export default async function DashboardPage() {
   const session = await getSession();
   
-  // Fetch some real stats from the database
-  const employeeCount = await prisma.user.count();
-  const projectCount = await prisma.project.count();
-  const taskCount = await prisma.task.count();
-  const pendingTaskCount = await prisma.task.count({
-    where: { status: "PENDING" },
-  });
+  if (!session?.user?.id) return null;
 
-  // Fetch data for Task Distribution Chart
-  const todoCount = pendingTaskCount;
-  const inProgressCount = await prisma.task.count({ where: { status: "IN_PROGRESS" } });
-  const doneCount = await prisma.task.count({ where: { status: "COMPLETED" } });
+  const isAdmin = session.user.role === "ADMIN";
 
-  const taskDistributionData = [
-    { name: 'To Do', value: todoCount, color: '#94a3b8' },      // slate-400
-    { name: 'In Progress', value: inProgressCount, color: '#3b82f6' }, // blue-500
-    { name: 'Done', value: doneCount, color: '#22c55e' },       // green-500
-  ];
+  // --- ADMIN DATA FETCHING ---
+  let adminData = null;
+  if (isAdmin) {
+    const employeeCount = await prisma.user.count();
+    const projectCount = await prisma.project.count();
+    const taskCount = await prisma.task.count();
+    const pendingTaskCount = await prisma.task.count({ where: { status: "PENDING" } });
 
-  // Fetch data for Employee Workload Chart (Tasks per user)
-  const usersWithTasks = await prisma.user.findMany({
-    include: {
-      _count: {
-        select: { assignedTasks: true }
-      }
-    },
-    // Only show employees that have tasks, or top 5
-    take: 10,
-    orderBy: {
-      assignedTasks: {
-        _count: 'desc'
-      }
-    }
-  });
+    const inProgressCount = await prisma.task.count({ where: { status: "IN_PROGRESS" } });
+    const doneCount = await prisma.task.count({ where: { status: "COMPLETED" } });
 
-  const employeeWorkloadData = usersWithTasks.map(u => ({
-    name: u.name.split(' ')[0], // First name only for cleaner chart
-    tasks: u._count.assignedTasks
-  })).filter(u => u.tasks > 0);
+    const taskDistributionData = [
+      { name: 'To Do', value: pendingTaskCount, color: '#94a3b8' },
+      { name: 'In Progress', value: inProgressCount, color: '#3b82f6' },
+      { name: 'Done', value: doneCount, color: '#22c55e' },
+    ];
 
-  // Fetch today's attendance record for the logged-in user
-  let todayRecord = null;
-  let dailyChecklistData: any[] = [];
-  
-  if (session?.user?.id) {
+    const usersWithTasks = await prisma.user.findMany({
+      include: { _count: { select: { assignedTasks: true } } },
+      take: 10,
+      orderBy: { assignedTasks: { _count: 'desc' } }
+    });
+
+    const employeeWorkloadData = usersWithTasks.map(u => ({
+      name: u.name.split(' ')[0],
+      tasks: u._count.assignedTasks
+    })).filter(u => u.tasks > 0);
+
+    adminData = { employeeCount, projectCount, taskCount, pendingTaskCount, taskDistributionData, employeeWorkloadData };
+  }
+
+  // --- EMPLOYEE DATA FETCHING ---
+  let employeeData = null;
+  if (!isAdmin) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     
-    todayRecord = await prisma.attendance.findFirst({
-      where: {
-        userId: session.user.id,
-        date: { gte: todayStart },
-      }
+    const todayRecord = await prisma.attendance.findFirst({
+      where: { userId: session.user.id, date: { gte: todayStart } }
     });
 
-    if (session.user.role !== "ADMIN") {
-      // Fetch daily responsibilities mapped to this user
-      const userResp = await prisma.userDailyResponsibility.findMany({
-        where: { userId: session.user.id },
-        include: { dailyResponsibility: true }
-      });
+    const userResp = await prisma.userDailyResponsibility.findMany({
+      where: { userId: session.user.id },
+      include: { dailyResponsibility: true }
+    });
 
-      // Fetch logs for today
-      const todaysLogs = await prisma.dailyTaskLog.findMany({
-        where: {
-          userId: session.user.id,
-          date: todayStart,
+    const todaysLogs = await prisma.dailyTaskLog.findMany({
+      where: { userId: session.user.id, date: todayStart }
+    });
+
+    const dailyChecklistData = userResp.map(ur => {
+      const log = todaysLogs.find(l => l.dailyResponsibilityId === ur.dailyResponsibilityId);
+      return {
+        id: ur.dailyResponsibilityId,
+        name: ur.dailyResponsibility.name,
+        description: ur.dailyResponsibility.description,
+        status: log?.status || "PENDING",
+      };
+    });
+
+    // Fetch employee's project tasks
+    const myProjectTasks = await prisma.taskAssignee.findMany({
+      where: { 
+        userId: session.user.id, 
+        task: { status: { not: "COMPLETED" } } 
+      },
+      include: {
+        task: {
+          include: { project: true }
         }
-      });
+      },
+      orderBy: [
+        { task: { priority: 'desc' } }, // Note: assuming priority is an enum, simple string sorting won't work perfectly if enums aren't ordered, but it works for now.
+        { task: { deadline: 'asc' } }
+      ]
+    });
 
-      // Combine them
-      dailyChecklistData = userResp.map(ur => {
-        const log = todaysLogs.find(l => l.dailyResponsibilityId === ur.dailyResponsibilityId);
-        return {
-          id: ur.dailyResponsibilityId,
-          name: ur.dailyResponsibility.name,
-          description: ur.dailyResponsibility.description,
-          status: log?.status || "PENDING",
-        };
-      });
+    // Calculate total hours today
+    let totalHoursToday = "0h 0m";
+    if (todayRecord?.clockIn) {
+      const end = todayRecord.clockOut || new Date();
+      const diffMs = end.getTime() - todayRecord.clockIn.getTime();
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMins = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      totalHoursToday = `${diffHrs}h ${diffMins}m`;
     }
+
+    employeeData = { user: session.user, todayRecord, dailyChecklistData, myProjectTasks, totalHoursToday };
   }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       
-      {/* Employee Specific Widgets - Hidden for Admins */}
-      {session?.user?.id && session.user.role !== "ADMIN" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <AttendanceTracker todayRecord={todayRecord} />
-          </div>
-          <div>
-            <DailyChecklist tasks={dailyChecklistData} />
-          </div>
-        </div>
+      {!isAdmin && employeeData && (
+        <EmployeeDashboard {...employeeData} />
       )}
 
-      {/* Admin Specific Widgets - Hidden for Employees */}
-      {session?.user?.role === "ADMIN" && (
+      {isAdmin && adminData && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-white border-slate-200 shadow-sm text-slate-900 rounded-xl">
@@ -118,7 +119,7 @@ export default async function DashboardPage() {
                 <FolderKanban className="w-5 h-5 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold tracking-tight text-slate-900">{projectCount}</div>
+                <div className="text-3xl font-bold tracking-tight text-slate-900">{adminData.projectCount}</div>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Active construction sites</p>
               </CardContent>
             </Card>
@@ -129,7 +130,7 @@ export default async function DashboardPage() {
                 <CheckSquare className="w-5 h-5 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold tracking-tight text-slate-900">{taskCount}</div>
+                <div className="text-3xl font-bold tracking-tight text-slate-900">{adminData.taskCount}</div>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Across all projects</p>
               </CardContent>
             </Card>
@@ -140,7 +141,7 @@ export default async function DashboardPage() {
                 <AlertCircle className="w-5 h-5 text-amber-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold tracking-tight text-slate-900">{pendingTaskCount}</div>
+                <div className="text-3xl font-bold tracking-tight text-slate-900">{adminData.pendingTaskCount}</div>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Requires attention</p>
               </CardContent>
             </Card>
@@ -151,7 +152,7 @@ export default async function DashboardPage() {
                 <Users className="w-5 h-5 text-purple-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold tracking-tight text-slate-900">{employeeCount}</div>
+                <div className="text-3xl font-bold tracking-tight text-slate-900">{adminData.employeeCount}</div>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Registered team members</p>
               </CardContent>
             </Card>
@@ -166,7 +167,7 @@ export default async function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <TaskDistributionChart data={taskDistributionData} />
+                <TaskDistributionChart data={adminData.taskDistributionData} />
               </CardContent>
             </Card>
 
@@ -178,7 +179,7 @@ export default async function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <EmployeeWorkloadChart data={employeeWorkloadData} />
+                <EmployeeWorkloadChart data={adminData.employeeWorkloadData} />
               </CardContent>
             </Card>
           </div>
