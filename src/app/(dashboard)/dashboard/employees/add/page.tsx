@@ -21,7 +21,8 @@ const ROLES = [
   "ARCHITECT",
   "CIVIL_ENGINEER",
   "STRUCTURAL_ENGINEER",
-  "DOCUMENTATION_OFFICER"
+  "DOCUMENTATION_OFFICER",
+  "OTHER"
 ];
 
 export default function AddEmployeePage() {
