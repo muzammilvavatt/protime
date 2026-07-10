@@ -74,3 +74,35 @@ export async function deleteDailyResponsibilityAction(id: string) {
   await prisma.dailyResponsibility.delete({ where: { id } });
   revalidatePath("/dashboard/settings/roles");
 }
+
+import * as bcrypt from "bcryptjs";
+
+// --- USER SETTINGS ---
+
+export async function changePasswordAction(prevState: any, formData: FormData) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+  
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (newPassword !== confirmPassword) {
+    return { error: "Passwords do not match." };
+  }
+
+  try {
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { passwordHash }
+    });
+    return { success: true, message: "Password updated successfully." };
+  } catch (error) {
+    return { error: "Failed to update password." };
+  }
+}
