@@ -220,19 +220,16 @@ export function AddProjectForm({ employees }: { employees: any[] }) {
 
                   <div className="flex-1 w-full space-y-1">
                     <Label className="text-xs text-slate-500">Category *</Label>
-                    <Input
-                      list="categories"
+                    <select
                       value={step.category}
                       onChange={(e) => updateStep(step.id, 'category', e.target.value)}
                       required
-                      placeholder="Select or type custom..."
-                      className="h-9 text-sm border-slate-300"
-                    />
-                    <datalist id="categories">
+                      className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900"
+                    >
                       {TASK_CATEGORIES.map(c => (
                         <option key={c} value={c}>{c.replace(/_/g, " ")}</option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
 
                   <div className="flex-1 w-full space-y-1">
