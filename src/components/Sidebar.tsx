@@ -17,13 +17,13 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   }, [pathname]);
 
   const links = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false, exact: true },
     { href: "/dashboard/projects", label: "Projects", icon: FolderKanban, adminOnly: true },
     { href: "/dashboard/tasks", label: isAdmin ? "All Tasks" : "My Tasks", icon: CheckSquare, adminOnly: false },
     { href: "/dashboard/employees", label: "Employees", icon: Users, adminOnly: true },
     { href: "/dashboard/attendance", label: "Attendance", icon: CheckSquare, adminOnly: true },
     { href: "/dashboard/settings/roles", label: "Roles", icon: BriefcaseBusiness, adminOnly: true },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings, adminOnly: false },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings, adminOnly: false, exact: true },
   ];
 
   return (
@@ -71,7 +71,9 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
           {links.map((link) => {
             if (link.adminOnly && !isAdmin) return null;
             
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+            const isActive = link.exact 
+              ? pathname === link.href 
+              : pathname === link.href || pathname.startsWith(`${link.href}/`);
             const Icon = link.icon;
             
             return (
