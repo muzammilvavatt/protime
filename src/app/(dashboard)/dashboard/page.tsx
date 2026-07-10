@@ -47,6 +47,8 @@ export default async function DashboardPage() {
   // --- EMPLOYEE DATA FETCHING ---
   let employeeData = null;
   if (!isAdmin) {
+    const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+    
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     
@@ -100,7 +102,7 @@ export default async function DashboardPage() {
       totalHoursToday = `${diffHrs}h ${diffMins}m`;
     }
 
-    employeeData = { user: session.user, todayRecord, dailyChecklistData, myProjectTasks, totalHoursToday };
+    employeeData = { user: dbUser, todayRecord, dailyChecklistData, myProjectTasks, totalHoursToday };
   }
 
   return (
