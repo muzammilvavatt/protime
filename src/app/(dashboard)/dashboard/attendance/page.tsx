@@ -32,9 +32,12 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
   const endOfDay = new Date(selectedDate);
   endOfDay.setDate(endOfDay.getDate() + 1);
 
-  // Fetch all users
+  // Fetch all employees (exclude ADMIN)
   const users = await prisma.user.findMany({
-    where: { isActive: true },
+    where: { 
+      isActive: true,
+      role: "EMPLOYEE"
+    },
     orderBy: { name: 'asc' }
   });
 
