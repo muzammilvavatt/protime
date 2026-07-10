@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, UserCircle, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Users, Plus, UserCircle, CheckCircle2, XCircle, Trash2, Pencil } from "lucide-react";
 import { toggleEmployeeStatus, deleteEmployeeAction } from "@/actions/employee.actions";
 import { getSession } from "@/lib/session";
 
@@ -89,6 +89,16 @@ export default async function EmployeesPage() {
                             {employee.isActive ? "Deactivate" : "Activate"}
                           </Button>
                         </form>
+                        <Link href={`/dashboard/employees/${employee.id}/edit`}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            title="Edit Employee"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </Link>
                         <form action={deleteEmployeeAction.bind(null, employee.id)}>
                           <Button 
                             type="submit" 

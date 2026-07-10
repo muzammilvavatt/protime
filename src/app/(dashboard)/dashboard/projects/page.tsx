@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { deleteProjectAction } from "@/actions/project.actions";
 import { getSession } from "@/lib/session";
 
@@ -87,17 +87,29 @@ export default async function ProjectsPage() {
                         </Button>
                       </Link>
                       {isAdmin && (
-                        <form action={deleteProjectAction.bind(null, project.id)}>
-                          <Button 
-                            type="submit" 
-                            variant="ghost" 
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Delete Project"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </form>
+                        <>
+                          <Link href={`/dashboard/projects/${project.id}/edit`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+                              title="Edit Project"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                          <form action={deleteProjectAction.bind(null, project.id)}>
+                            <Button 
+                              type="submit" 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Delete Project"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </form>
+                        </>
                       )}
                     </div>
                   </td>

@@ -76,3 +76,46 @@ export async function deleteEmployeeAction(id: string) {
   });
   revalidatePath("/dashboard/employees");
 }
+
+export async function editEmployeeAction(id: string, prevState: any, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch (err: any) {
+    return { error: err.message };
+  }
+
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const role = formData.get("role") as string;
+
+  if (!name || !email || !role) {
+    return { error: "Name, Email, and Role are required" };
+  }
+
+  // Check if email already exists and belongs to someone else
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser && existingUser.id !== id) {
+    return { error: "Email already in use by another employee" };
+  }
+
+  const updateData: any = { name, email, role };
+
+  // Only update password if provided
+  if (password) {
+    const salt = bcrypt.genSaltSync(10);
+    updateData.passwordHash = bcrypt.hashSync(password, salt);
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+  } catch (error) {
+    return { error: "Failed to update employee" };
+  }
+
+  revalidatePath("/dashboard/employees");
+  redirect("/dashboard/employees");
+}

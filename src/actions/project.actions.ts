@@ -109,3 +109,52 @@ export async function deleteProjectAction(id: string) {
   revalidatePath("/dashboard/projects");
   revalidatePath("/dashboard");
 }
+
+export async function editProjectAction(id: string, prevState: any, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch (err: any) {
+    return { error: err.message };
+  }
+
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const clientName = formData.get("clientName") as string;
+  const clientEmail = formData.get("clientEmail") as string;
+  const clientPhone = formData.get("clientPhone") as string;
+  const location = formData.get("location") as string;
+  const deadlineStr = formData.get("deadline") as string;
+  const status = formData.get("status") as string;
+
+  if (!name || !clientName) {
+    return { error: "Project Name and Client Name are required" };
+  }
+
+  let deadline = null;
+  if (deadlineStr) {
+    deadline = new Date(deadlineStr);
+  }
+
+  try {
+    await prisma.project.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        clientName,
+        clientEmail,
+        clientPhone,
+        location,
+        deadline,
+        status: status || "ACTIVE",
+      },
+    });
+  } catch (error) {
+    return { error: "Failed to update project" };
+  }
+
+  revalidatePath("/dashboard/projects");
+  revalidatePath(`/dashboard/projects/${id}`);
+  revalidatePath("/dashboard");
+  redirect(`/dashboard/projects/${id}`);
+}
