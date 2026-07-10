@@ -44,8 +44,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <CardContent className="space-y-4 text-sm pt-6">
               <div>
                 <span className="text-slate-500 font-medium block">Status</span>
-                <span className="font-semibold text-blue-700">{project.status}</span>
+                <span className="font-semibold text-blue-700">{project.status.replace(/_/g, " ")}</span>
               </div>
+              {project.description && (
+                <div>
+                  <span className="text-slate-500 font-medium block">Description</span>
+                  <p className="text-slate-700 leading-relaxed mt-1">{project.description}</p>
+                </div>
+              )}
               <div>
                 <span className="text-slate-500 font-medium block">Client</span>
                 <span className="font-semibold">{project.clientName}</span>
