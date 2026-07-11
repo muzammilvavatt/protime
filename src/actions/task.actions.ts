@@ -59,6 +59,14 @@ export async function createTaskAction(prevState: any, formData: FormData) {
       });
     }
 
+    await prisma.notification.create({
+      data: {
+        userId: assigneeId,
+        type: "TASK_ASSIGNED",
+        message: `You have been assigned a new task: ${name}`,
+      }
+    });
+
   } catch (error) {
     console.error(error);
     return { error: "Failed to create task" };
@@ -132,6 +140,17 @@ export async function completeTaskAction(taskId: string) {
     }
   });
 
+  const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+  for (const admin of admins) {
+    await prisma.notification.create({
+      data: {
+        userId: admin.id,
+        type: "TASK_COMPLETED",
+        message: `${session.user.name || 'An employee'} completed task: ${task.name}`,
+      }
+    });
+  }
+
   revalidatePath("/dashboard/tasks");
   revalidatePath(`/dashboard/tasks/${taskId}`);
 }
@@ -154,6 +173,8 @@ export async function requestTimeExtensionAction(taskId: string, formData: FormD
     }
   });
 
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
   await prisma.activityLog.create({
     data: {
       action: "EXTENSION_REQUESTED",
@@ -164,6 +185,17 @@ export async function requestTimeExtensionAction(taskId: string, formData: FormD
     }
   });
 
+  const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+  for (const admin of admins) {
+    await prisma.notification.create({
+      data: {
+        userId: admin.id,
+        type: "TIME_EXTENSION_REQUESTED",
+        message: `${session.user.name || 'An employee'} requested ${hours} extra hours for task: ${task?.name || 'Unknown'}`,
+      }
+    });
+  }
+
   revalidatePath("/dashboard/tasks");
   revalidatePath(`/dashboard/tasks/${taskId}`);
 }
@@ -172,7 +204,10 @@ export async function approveTimeExtensionAction(taskId: string) {
   const session = await getSession();
   if (session?.user?.role !== "ADMIN") return { error: "Unauthorized" };
 
-  const task = await prisma.task.findUnique({ where: { id: taskId } });
+  const task = await prisma.task.findUnique({ 
+    where: { id: taskId },
+    include: { assignees: true }
+  });
   if (!task || !task.extensionRequestedHours) return { error: "No extension requested" };
 
   const newAllottedHours = (task.allottedHours || 0) + task.extensionRequestedHours;
@@ -196,6 +231,16 @@ export async function approveTimeExtensionAction(taskId: string) {
       details: `Approved ${task.extensionRequestedHours} extra hours`
     }
   });
+
+  for (const a of task.assignees) {
+    await prisma.notification.create({
+      data: {
+        userId: a.userId,
+        type: "TIME_EXTENSION_APPROVED",
+        message: `Your time extension of ${task.extensionRequestedHours} hours was approved for task: ${task.name}`,
+      }
+    });
+  }
 
   revalidatePath("/dashboard/tasks");
   revalidatePath(`/dashboard/tasks/${taskId}`);
