@@ -64,10 +64,10 @@ export async function clockInAction(coords?: { lat: number, lng: number }) {
     return { error: "Already clocked in today" };
   }
 
-  // Determine status (LATE if clocked in after 10:00 AM)
+  // Determine status (LATE if clocked in after 9:15 AM)
   let status = "PRESENT";
   const lateThreshold = new Date();
-  lateThreshold.setHours(10, 0, 0, 0);
+  lateThreshold.setHours(9, 15, 0, 0);
   
   if (now > lateThreshold) {
     status = "LATE";
