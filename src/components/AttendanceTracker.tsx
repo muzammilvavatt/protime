@@ -1,21 +1,41 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { clockInAction, clockOutAction } from "@/actions/attendance.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, LogIn, LogOut, CheckCircle } from "lucide-react";
+import { Clock, LogIn, LogOut, CheckCircle, AlertTriangle } from "lucide-react";
 
 export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
   const [isPending, startTransition] = useTransition();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleClockIn = () => {
-    startTransition(async () => {
-      await clockInAction();
-    });
+    setErrorMsg(null);
+    if (!navigator.geolocation) {
+      setErrorMsg("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        startTransition(async () => {
+          const res = await clockInAction({ lat: latitude, lng: longitude });
+          if (res?.error) {
+            setErrorMsg(res.error);
+          }
+        });
+      },
+      (error) => {
+        setErrorMsg("Failed to get location. Please allow location access.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   const handleClockOut = () => {
+    setErrorMsg(null);
     startTransition(async () => {
       await clockOutAction();
     });
@@ -53,8 +73,14 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-12 text-lg font-semibold"
             >
               <LogIn className="w-5 h-5 mr-2" />
-              {isPending ? "Recording..." : "Clock In Now"}
+              {isPending ? "Getting Location..." : "Clock In Now"}
             </Button>
+            {errorMsg && (
+              <div className="flex items-center text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md p-3 text-left">
+                <AlertTriangle className="w-5 h-5 mr-2 flex-shrink-0" />
+                {errorMsg}
+              </div>
+            )}
           </div>
         )}
 

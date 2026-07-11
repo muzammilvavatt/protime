@@ -4,13 +4,45 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
-export async function clockInAction() {
+const OFFICE1 = { lat: 11.4779869, lng: 76.001393 };
+const OFFICE2 = { lat: 11.2922645, lng: 75.8153588 };
+const MAX_RADIUS_METERS = 100;
+
+function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371e3;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export async function clockInAction(coords?: { lat: number, lng: number }) {
   const session = await getSession();
   if (!session?.user?.id) {
     return { error: "Unauthorized" };
   }
 
   const userId = session.user.id;
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  
+  if (!user?.isWFH) {
+    if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') {
+      return { error: "Location is required to clock in. Please enable location permissions." };
+    }
+    
+    const dist1 = getDistanceFromLatLonInMeters(coords.lat, coords.lng, OFFICE1.lat, OFFICE1.lng);
+    const dist2 = getDistanceFromLatLonInMeters(coords.lat, coords.lng, OFFICE2.lat, OFFICE2.lng);
+    
+    if (dist1 > MAX_RADIUS_METERS && dist2 > MAX_RADIUS_METERS) {
+      return { error: "You are not within the 100m range of any office premises." };
+    }
+  }
+
   const now = new Date();
   
   // Create a date object representing midnight of the local time
