@@ -40,9 +40,9 @@ export function NotificationBell() {
               {notifications.map(n => (
                 <div key={n.id} className={`p-4 hover:bg-slate-50 transition-colors ${!n.isRead ? 'bg-blue-50/50' : ''}`}>
                   <p className="text-sm text-slate-800 font-medium leading-snug">{n.message}</p>
-                  <span className="text-xs text-slate-400 mt-2 block" suppressHydrationWarning>
-                    {new Date(n.createdAt).toISOString().replace('T', ' ').substring(0, 16)}
-                  </span>
+                  <p className="text-xs text-slate-400 mt-1" suppressHydrationWarning>
+                    {new Date(n.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </p>
                 </div>
               ))}
             </div>
