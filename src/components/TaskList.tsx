@@ -108,7 +108,7 @@ export function TaskList({ initialTasks, activeTab, isAdmin }: { initialTasks: T
                       {getStatusIcon(task.status)}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <Link href={`/dashboard/tasks/${task.id}`} className="font-medium text-slate-900 hover:text-blue-600 truncate text-sm">
+                      <Link href={`/dashboard/tasks/${task.id}`} className="font-semibold text-blue-600 hover:text-blue-800 hover:underline truncate text-sm flex items-center group">
                         {task.name}
                         {isBlocked && <Lock className="inline-block w-3 h-3 ml-2 text-slate-400" />}
                       </Link>
@@ -169,7 +169,7 @@ export function TaskList({ initialTasks, activeTab, isAdmin }: { initialTasks: T
                   <div className="flex-shrink-0 w-28 flex justify-end">
                     {activeTab === "active" && !isBlocked && (
                       <div className="flex space-x-1">
-                        {task.status === "PENDING" && (
+                        {task.status === "PENDING" && !isAdmin && (
                           <Button 
                             size="sm" 
                             variant="outline" 
@@ -180,26 +180,15 @@ export function TaskList({ initialTasks, activeTab, isAdmin }: { initialTasks: T
                             Start
                           </Button>
                         )}
-                        {(task.status === "IN_PROGRESS" || task.status === "TIME_EXTENSION_REQUESTED") && (
-                          isAdmin ? (
-                            <Button 
-                              size="sm" 
-                              className="h-7 text-xs font-medium bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => handleStatusChange(task.id, "COMPLETED")}
-                              disabled={isPending}
-                            >
-                              Complete
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              className="h-7 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white"
-                              onClick={() => handleStatusChange(task.id, "REVIEW")}
-                              disabled={isPending}
-                            >
-                              Submit for Review
-                            </Button>
-                          )
+                        {(task.status === "IN_PROGRESS" || task.status === "TIME_EXTENSION_REQUESTED") && !isAdmin && (
+                          <Button 
+                            size="sm" 
+                            className="h-7 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white"
+                            onClick={() => handleStatusChange(task.id, "REVIEW")}
+                            disabled={isPending}
+                          >
+                            Submit for Review
+                          </Button>
                         )}
                         {task.status === "REVIEW" && (
                           isAdmin ? (
