@@ -62,44 +62,30 @@ export function EmployeeDashboard({
 
   return (
     <div className="space-y-6">
-      {/* ── Greeting Header ── */}
-      <div
-        className="relative rounded-2xl p-8 text-white shadow-lg overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1e1b4b 60%, #312e81 100%)" }}
-      >
-        {/* Subtle grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        {/* Glow orbs */}
-        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 translate-x-1/3 -translate-y-1/4 pointer-events-none" />
-        <div className="absolute right-32 bottom-0 w-56 h-56 bg-violet-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 translate-y-1/3 pointer-events-none" />
-
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 sm:p-8 relative overflow-hidden">
+        {/* Decorative corner accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-8 -mt-8" />
+        
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">
               Welcome back, {firstName}! 👋
             </h1>
-            <p className="text-indigo-300 font-medium text-sm flex items-center gap-1.5">
-              <CalendarDays className="w-4 h-4" />
+            <p className="text-slate-500 font-medium text-sm flex items-center gap-1.5">
+              <CalendarDays className="w-4 h-4 text-slate-400" />
               {todayStr}
             </p>
           </div>
           {/* Clock-in status pill */}
           <div className="flex-shrink-0">
             {isClockedIn ? (
-              <span className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40 rounded-full px-4 py-1.5 text-sm font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Clocked In
               </span>
             ) : (
-              <span className="inline-flex items-center gap-2 bg-slate-700/60 text-slate-400 ring-1 ring-slate-600 rounded-full px-4 py-1.5 text-sm font-semibold">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
+              <span className="inline-flex items-center gap-2 bg-slate-50 text-slate-600 ring-1 ring-slate-200 rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-slate-400" />
                 Not Clocked In
               </span>
             )}

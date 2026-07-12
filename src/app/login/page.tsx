@@ -36,31 +36,14 @@ export default function LoginPage() {
         <div className="relative z-10 space-y-8">
           <div className="space-y-4">
             <h2 className="text-4xl font-bold text-white leading-tight tracking-tight">
-              Your team.<br />
+              PROTIME<br />
               <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                All in one place.
+                Workspace
               </span>
             </h2>
             <p className="text-slate-400 text-base leading-relaxed max-w-sm">
-              Manage projects, track attendance, assign tasks, and coordinate your team — the internal management system built for PROTIME.
+              Your central hub for tracking projects, attendance, and tasks.
             </p>
-          </div>
-
-          {/* Feature highlights */}
-          <div className="space-y-3">
-            {[
-              "Project & task tracking",
-              "Daily attendance & clock-in",
-              "Team coordination & reports",
-              "WhatsApp task notifications",
-            ].map((feat) => (
-              <div key={feat} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0">
-                  <div className="w-2 h-2 bg-indigo-400 rounded-full" />
-                </div>
-                <span className="text-slate-300 text-sm">{feat}</span>
-              </div>
-            ))}
           </div>
         </div>
 
