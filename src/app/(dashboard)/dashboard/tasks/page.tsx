@@ -1,33 +1,35 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock } from "lucide-react";
+import { Plus, ListTodo, History } from "lucide-react";
 import { getSession } from "@/lib/session";
 
-import { KanbanBoard } from "@/components/KanbanBoard";
+import { TaskList } from "@/components/TaskList";
 
-export default async function TasksPage() {
+export default async function TasksPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getSession();
   const isAdmin = session?.user?.role === "ADMIN";
+  
+  const resolvedParams = await searchParams;
+  const activeTab = resolvedParams.tab === "completed" ? "completed" : "active";
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const baseWhere = {
-    OR: [
-      { status: { not: "COMPLETED" } },
-      { status: "COMPLETED", completedAt: { gte: sevenDaysAgo } }
-    ]
-  };
+  // Base status filter based on the active tab
+  const statusFilter = activeTab === "completed" 
+    ? { status: "COMPLETED" } 
+    : { status: { not: "COMPLETED" } };
 
   const tasks = await prisma.task.findMany({
-    where: isAdmin ? baseWhere : {
-      ...baseWhere,
+    where: isAdmin ? statusFilter : {
+      ...statusFilter,
       assignees: {
         some: { userId: session?.user?.id }
       }
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [
+      { project: { name: "asc" } },
+      { priority: "desc" },
+      { createdAt: "desc" }
+    ],
     include: {
       project: true,
       dependsOn: true,
@@ -54,7 +56,22 @@ export default async function TasksPage() {
         )}
       </div>
 
-      <KanbanBoard initialTasks={tasks} />
+      <div className="flex space-x-2 border-b border-slate-200 pb-px">
+        <Link href="/dashboard/tasks?tab=active">
+          <Button variant="ghost" className={`rounded-none border-b-2 px-4 py-2 hover:bg-transparent ${activeTab === 'active' ? 'border-blue-600 text-blue-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <ListTodo className="w-4 h-4 mr-2" />
+            Active Tasks
+          </Button>
+        </Link>
+        <Link href="/dashboard/tasks?tab=completed">
+          <Button variant="ghost" className={`rounded-none border-b-2 px-4 py-2 hover:bg-transparent ${activeTab === 'completed' ? 'border-blue-600 text-blue-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <History className="w-4 h-4 mr-2" />
+            Completed History
+          </Button>
+        </Link>
+      </div>
+
+      <TaskList initialTasks={tasks} activeTab={activeTab} isAdmin={isAdmin} />
     </div>
   );
 }
