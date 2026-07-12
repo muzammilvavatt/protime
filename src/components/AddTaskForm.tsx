@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
+import { CheckCircle2, MessageCircle } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -27,14 +28,42 @@ export function AddTaskForm({ projects, employees, tasks = [] }: { projects: any
   const [state, formAction, isPending] = useActionState(createTaskAction, undefined);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state?.success) {
-      if (state.whatsappUrl) {
-        window.open(state.whatsappUrl, '_blank');
-      }
-      router.push("/dashboard/tasks");
-    }
-  }, [state, router]);
+  // If we have a success state, show a success UI instead of the form.
+  if (state?.success) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in duration-300">
+        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2 shadow-sm">
+          <CheckCircle2 className="w-8 h-8" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Task Created Successfully!</h2>
+          <p className="text-slate-500 mt-2 max-w-md">The task has been saved to the database and assigned to the selected employee.</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
+          {state.whatsappUrl && (
+            <a 
+              href={state.whatsappUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={() => router.push("/dashboard/tasks")}
+              className="inline-flex h-10 items-center justify-center rounded-md bg-green-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Notify via WhatsApp
+            </a>
+          )}
+          <Button 
+            variant="outline" 
+            onClick={() => router.push("/dashboard/tasks")}
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
+          >
+            Go to Task List
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction}>
