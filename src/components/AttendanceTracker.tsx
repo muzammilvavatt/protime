@@ -5,7 +5,7 @@ import { clockInAction, clockOutAction } from "@/actions/attendance.actions";
 import { Clock, LogIn, LogOut, CheckCircle, AlertTriangle, MapPin, Camera, X } from "lucide-react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
-import { createClient } from "@supabase/supabase-js";
+import { uploadFileToServerAction } from "@/actions/upload.actions";
 import { Button } from "./ui/button";
 
 export function AttendanceTracker({ 
@@ -91,27 +91,16 @@ export function AttendanceTracker({
       }
 
       if (!isMatch) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        if (!supabaseUrl || !supabaseKey) throw new Error("Supabase credentials missing.");
-        
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        
         const res = await fetch(imageSrc);
         const blob = await res.blob();
         
+        const formData = new FormData();
+        formData.append("file", blob, "selfie.jpeg");
+
         const fileName = `attendance-${user.id}-${Date.now()}.jpeg`;
-        const { error: uploadError } = await supabase.storage
-          .from('uploads')
-          .upload(`attendance-photos/${fileName}`, blob);
-          
-        if (uploadError) throw uploadError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('uploads')
-          .getPublicUrl(`attendance-photos/${fileName}`);
-          
-        photoUrl = publicUrl;
+        const filePath = `attendance-photos/${fileName}`;
+
+        photoUrl = await uploadFileToServerAction(formData, filePath);
       }
 
       setShowCamera(false);

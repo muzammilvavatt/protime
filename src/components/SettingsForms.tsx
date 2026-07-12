@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { changePasswordAction, updateGlobalSettingsAction, updateProfilePictureAction } from "@/actions/settings.actions";
-import { createClient } from "@supabase/supabase-js";
+import { uploadFileToServerAction } from "@/actions/upload.actions";
 import { useTransition } from "react";
 
 export function ChangePasswordForm() {
@@ -97,29 +97,15 @@ export function ProfilePictureForm({ user }: { user: any }) {
     setIsUploading(true);
     setError(null);
     try {
-      // 1. Initialize Supabase
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      // 2. Upload file
+      const formData = new FormData();
+      formData.append("file", file);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Math.random()}.${fileExt}`;
       const filePath = `profile-pictures/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('uploads')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // 3. Get Public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('uploads')
-        .getPublicUrl(filePath);
-
-      // 4. Save to database
-      await updateProfilePictureAction(publicUrl);
+      const publicUrl = await uploadFileToServerAction(formData, filePath);
+      const res = await updateProfilePictureAction(publicUrl);
     } catch (err: any) {
       setError(err.message || "Failed to upload image");
     } finally {
