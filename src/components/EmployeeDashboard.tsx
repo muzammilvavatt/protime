@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderKanban, CheckSquare, Clock, AlertCircle } from "lucide-react";
+import { FolderKanban, CheckSquare, Clock, AlertCircle, CalendarDays } from "lucide-react";
 import { AttendanceTracker } from "@/components/AttendanceTracker";
 import { DailyChecklist } from "@/components/DailyChecklist";
 import { EmployeeTaskActions } from "@/components/EmployeeTaskActions";
@@ -14,139 +13,260 @@ interface EmployeeDashboardProps {
   totalHoursToday: string;
 }
 
-export function EmployeeDashboard({ 
-  user, 
-  todayRecord, 
-  dailyChecklistData, 
+const getPriorityBorderClass = (priority: string) => {
+  switch (priority) {
+    case "URGENT":
+    case "HIGH":
+      return "border-l-rose-500";
+    case "MEDIUM":
+      return "border-l-amber-400";
+    default:
+      return "border-l-slate-300";
+  }
+};
+
+const getPriorityBadgeClass = (priority: string) => {
+  switch (priority) {
+    case "URGENT":
+    case "HIGH":
+      return "bg-rose-50 text-rose-700 ring-1 ring-rose-200";
+    case "MEDIUM":
+      return "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
+    default:
+      return "bg-slate-100 text-slate-600 ring-1 ring-slate-200";
+  }
+};
+
+export function EmployeeDashboard({
+  user,
+  todayRecord,
+  dailyChecklistData,
   myProjectTasks,
-  totalHoursToday 
+  totalHoursToday,
 }: EmployeeDashboardProps) {
-  const firstName = user?.name ? user.name.split(' ')[0] : 'Employee';
-  const pendingChecklistCount = dailyChecklistData.filter(t => t.status === "PENDING").length;
-  
-  const options: Intl.DateTimeFormatOptions = { 
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' 
+  const firstName = user?.name ? user.name.split(" ")[0] : "Employee";
+  const pendingChecklistCount = dailyChecklistData.filter(
+    (t) => t.status === "PENDING"
+  ).length;
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Kolkata",
   };
-  const todayStr = new Date().toLocaleDateString('en-IN', options);
+  const todayStr = new Date().toLocaleDateString("en-IN", options);
 
   const isClockedIn = !!(todayRecord && !todayRecord.clockOut);
 
   return (
     <div className="space-y-6">
-      {/* Greeting Header */}
-      <div className="bg-blue-600 rounded-2xl p-8 text-white shadow-md relative overflow-hidden">
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back, {firstName}! 👋</h1>
-          <p className="text-blue-100 font-medium">{todayStr}</p>
+      {/* ── Greeting Header ── */}
+      <div
+        className="relative rounded-2xl p-8 text-white shadow-lg overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1e1b4b 60%, #312e81 100%)" }}
+      >
+        {/* Subtle grid overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* Glow orbs */}
+        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 translate-x-1/3 -translate-y-1/4 pointer-events-none" />
+        <div className="absolute right-32 bottom-0 w-56 h-56 bg-violet-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 translate-y-1/3 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-1">
+              Welcome back, {firstName}! 👋
+            </h1>
+            <p className="text-indigo-300 font-medium text-sm flex items-center gap-1.5">
+              <CalendarDays className="w-4 h-4" />
+              {todayStr}
+            </p>
+          </div>
+          {/* Clock-in status pill */}
+          <div className="flex-shrink-0">
+            {isClockedIn ? (
+              <span className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40 rounded-full px-4 py-1.5 text-sm font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Clocked In
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2 bg-slate-700/60 text-slate-400 ring-1 ring-slate-600 rounded-full px-4 py-1.5 text-sm font-semibold">
+                <span className="w-2 h-2 rounded-full bg-slate-500" />
+                Not Clocked In
+              </span>
+            )}
+          </div>
         </div>
-        {/* Decorative background elements */}
-        <div className="absolute right-0 top-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 translate-x-1/3 -translate-y-1/4"></div>
-        <div className="absolute right-32 bottom-0 w-48 h-48 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 translate-y-1/4"></div>
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">My Pending Project Tasks</CardTitle>
-            <FolderKanban className="w-5 h-5 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">{myProjectTasks.length}</div>
-            <p className="text-xs text-slate-500 mt-1 font-medium">Require your attention</p>
-          </CardContent>
-        </Card>
+      {/* ── Quick Stats Row ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Stat 1 */}
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex items-center gap-4 animate-fade-in-up">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <FolderKanban className="w-6 h-6 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">
+              Pending Project Tasks
+            </p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900 leading-none">
+              {myProjectTasks.length}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">Require your attention</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Daily Checklist Tasks</CardTitle>
-            <CheckSquare className="w-5 h-5 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">{pendingChecklistCount}</div>
-            <p className="text-xs text-slate-500 mt-1 font-medium">Remaining for today</p>
-          </CardContent>
-        </Card>
+        {/* Stat 2 */}
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: "60ms" }}>
+          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <CheckSquare className="w-6 h-6 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">
+              Daily Checklist Tasks
+            </p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900 leading-none">
+              {pendingChecklistCount}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">Remaining for today</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Hours Logged Today</CardTitle>
-            <Clock className="w-5 h-5 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">{totalHoursToday}</div>
-            <p className="text-xs text-slate-500 mt-1 font-medium">Based on punch clock</p>
-          </CardContent>
-        </Card>
+        {/* Stat 3 */}
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: "120ms" }}>
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-6 h-6 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">
+              Hours Logged Today
+            </p>
+            <div className="text-3xl font-bold tracking-tight text-slate-900 leading-none">
+              {totalHoursToday}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">Based on punch clock</p>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* ── Main Content Area ── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        
-        {/* Left Column: Project Tasks (Takes up 2/3 space on large screens) */}
+        {/* Left Column: Project Tasks */}
         <div className="xl:col-span-2 space-y-6">
-          <Card className="bg-white border-slate-200 shadow-sm rounded-xl h-full">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="text-lg font-bold text-slate-800 flex items-center">
-                <FolderKanban className="w-5 h-5 mr-2 text-blue-600" />
-                My Project Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
-                {myProjectTasks.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 flex flex-col items-center">
-                    <CheckSquare className="w-12 h-12 text-slate-300 mb-3" />
-                    <p className="font-medium">You have no pending project tasks!</p>
-                    <p className="text-sm mt-1">Great job keeping up.</p>
+          <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden animate-fade-in-up">
+            {/* Card Header */}
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                <FolderKanban className="w-4 h-4 text-indigo-600" />
+              </div>
+              <h2 className="text-base font-bold text-slate-800">My Active Project Tasks</h2>
+              {myProjectTasks.length > 0 && (
+                <span className="ml-auto bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 text-xs font-bold px-2 py-0.5 rounded-full">
+                  {myProjectTasks.length}
+                </span>
+              )}
+            </div>
+
+            {/* Task List */}
+            <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+              {myProjectTasks.length === 0 ? (
+                <div className="p-10 text-center flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                    <CheckSquare className="w-7 h-7 text-emerald-400" />
                   </div>
-                ) : (
-                  myProjectTasks.map((assignment: any) => {
-                    const task = assignment.task;
-                    const isUrgent = task.priority === "URGENT" || task.priority === "HIGH";
-                    
-                    return (
-                      <div key={task.id} className="p-4 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isUrgent ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
-                              {task.priority}
+                  <p className="font-semibold text-slate-700">All caught up!</p>
+                  <p className="text-sm text-slate-400">You have no pending project tasks.</p>
+                </div>
+              ) : (
+                myProjectTasks.map((assignment: any) => {
+                  const task = assignment.task;
+                  const isUrgent =
+                    task.priority === "URGENT" || task.priority === "HIGH";
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={`p-4 hover:bg-slate-50/70 transition-colors border-l-4 ${getPriorityBorderClass(task.priority)} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        {/* Tags row */}
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${getPriorityBadgeClass(task.priority)}`}
+                          >
+                            {task.priority}
+                          </span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200">
+                            {task.project.name}
+                          </span>
+                          {task.deadline && (
+                            <span
+                              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                                new Date(task.deadline) < new Date()
+                                  ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200"
+                                  : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"
+                              }`}
+                            >
+                              <Clock className="w-2.5 h-2.5" />
+                              {new Date(task.deadline).toLocaleDateString("en-IN", {
+                                timeZone: "Asia/Kolkata",
+                                month: "short",
+                                day: "numeric",
+                              })}
                             </span>
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                              {task.project.name}
-                            </span>
-                          </div>
-                          <h4 className="font-semibold text-slate-900">{task.name}</h4>
-                          {task.allottedHours && (
-                            <div className="flex items-center text-xs text-slate-600 mt-1">
-                              <Clock className="w-3 h-3 mr-1" />
-                              Allotted Time: <span className="font-semibold ml-1">{task.allottedHours} hours</span>
-                            </div>
                           )}
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-3 sm:mt-0 items-end sm:items-center">
-                          <Link href={`/dashboard/tasks/${task.id}`}>
-                            <Button variant="outline" size="sm" className="w-full sm:w-auto text-slate-700 border-slate-300">
-                              Details
-                            </Button>
-                          </Link>
-                          <EmployeeTaskActions taskId={task.id} status={task.status} allottedHours={task.allottedHours} timeSpentMs={task.timeSpentMs} lastTimerStart={task.lastTimerStart} isClockedIn={isClockedIn} />
-                        </div>
+                        <h4 className="font-semibold text-slate-900 text-sm truncate">{task.name}</h4>
+                        {task.allottedHours && (
+                          <div className="flex items-center text-xs text-slate-500 mt-1">
+                            <Clock className="w-3 h-3 mr-1" />
+                            Allotted:{" "}
+                            <span className="font-semibold ml-1">{task.allottedHours} hrs</span>
+                          </div>
+                        )}
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-start sm:items-center">
+                        <Link href={`/dashboard/tasks/${task.id}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full sm:w-auto text-slate-700 border-slate-300 hover:border-indigo-300 hover:text-indigo-700 text-xs"
+                          >
+                            Details
+                          </Button>
+                        </Link>
+                        <EmployeeTaskActions
+                          taskId={task.id}
+                          status={task.status}
+                          allottedHours={task.allottedHours}
+                          timeSpentMs={task.timeSpentMs}
+                          lastTimerStart={task.lastTimerStart}
+                          isClockedIn={isClockedIn}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: Daily Productivity */}
+        {/* Right Column: Attendance + Daily Checklist */}
         <div className="xl:col-span-1 space-y-6">
           <AttendanceTracker todayRecord={todayRecord} />
           <DailyChecklist tasks={dailyChecklistData} />
         </div>
-
       </div>
     </div>
   );

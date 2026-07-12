@@ -48,75 +48,43 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ─── PROTIME Light Mode ─────────────────────────────────────────────────── */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.97 0.004 264);
+  --foreground: oklch(0.13 0.02 264);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.13 0.02 264);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.13 0.02 264);
+  --primary: oklch(0.55 0.22 264);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.005 264);
+  --secondary-foreground: oklch(0.25 0.02 264);
+  --muted: oklch(0.96 0.004 264);
+  --muted-foreground: oklch(0.5 0.02 264);
+  --accent: oklch(0.55 0.22 264);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6 0.22 25);
+  --border: oklch(0.91 0.006 264);
+  --input: oklch(0.91 0.006 264);
+  --ring: oklch(0.55 0.22 264);
+  --radius: 0.75rem;
+  --chart-1: oklch(0.55 0.22 264);
+  --chart-2: oklch(0.65 0.18 160);
+  --chart-3: oklch(0.7 0.18 55);
+  --chart-4: oklch(0.6 0.2 300);
+  --chart-5: oklch(0.55 0.2 25);
+  --sidebar: oklch(0.13 0.03 264);
+  --sidebar-foreground: oklch(0.95 0.005 264);
+  --sidebar-primary: oklch(0.6 0.22 264);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.2 0.04 264);
+  --sidebar-accent-foreground: oklch(0.95 0.005 264);
+  --sidebar-border: oklch(0.22 0.03 264);
+  --sidebar-ring: oklch(0.55 0.22 264);
 }
 
-.dark {
-  --background: oklch(0.1 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.15 250);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.2 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.2 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.2 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(1 0 0 / 7%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.6 0.15 250);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.12 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.6 0.15 250);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.2 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 7%);
-  --sidebar-ring: oklch(0.6 0.15 250);
-}
-
+/* ─── Base Layer ─────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -129,6 +97,113 @@
   }
 }
 
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease-out both;
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
+}
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out both;
+}
+.animate-scale-in {
+  animation: scale-in 0.25s ease-out both;
+}
+
+/* staggered children */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ─── Status Badge Utilities ─────────────────────────────────────────────── */
+.badge-pending {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+         bg-amber-50 text-amber-700 ring-1 ring-amber-200;
+}
+.badge-in-progress {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+         bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200;
+}
+.badge-review {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+         bg-violet-50 text-violet-700 ring-1 ring-violet-200;
+}
+.badge-completed {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+         bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200;
+}
+.badge-high {
+  @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold
+         bg-rose-50 text-rose-700;
+}
+.badge-medium {
+  @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold
+         bg-amber-50 text-amber-700;
+}
+.badge-low {
+  @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold
+         bg-slate-100 text-slate-600;
+}
+
+/* ─── Card Utilities ─────────────────────────────────────────────────────── */
+.protime-card {
+  @apply bg-white rounded-xl ring-1 ring-slate-200 shadow-sm;
+}
+.protime-card-hover {
+  @apply bg-white rounded-xl ring-1 ring-slate-200 shadow-sm
+         hover:shadow-md hover:ring-indigo-200 transition-all duration-200 cursor-pointer;
+}
+
+/* ─── Input Utilities ─────────────────────────────────────────────────────── */
+.protime-input {
+  @apply bg-white border border-slate-300 text-slate-900 rounded-lg
+         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+         placeholder:text-slate-400 transition-colors;
+}
+
+/* ─── Print Stylesheet ───────────────────────────────────────────────────── */
 @media print {
   body {
     background-color: white !important;
@@ -136,7 +211,10 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .no-print, .sidebar, header, nav {
+  .no-print,
+  aside,
+  header,
+  nav {
     display: none !important;
   }
   .print-only {

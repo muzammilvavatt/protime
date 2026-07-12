@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Office Management System",
-  description: "Enterprise Construction Project Management",
+  title: "PROTIME — Construction Project Management",
+  description: "Enterprise construction and project management platform by PROTIME.",
 };
 
 export default function RootLayout({

@@ -5,8 +5,7 @@ import { createProjectAction } from "@/actions/project.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Building2, Plus, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -22,101 +21,98 @@ export function AddProjectForm() {
   }, [state, router]);
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto pb-10">
-      <form action={formAction}>
+    <div className="max-w-3xl mx-auto pb-12 animate-fade-in-up">
+      {/* Page Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/dashboard/projects">
+          <Button variant="outline" size="icon" className="rounded-xl border-slate-200 hover:bg-slate-50 text-slate-600 h-9 w-9">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        </Link>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">New Project</h2>
+          <p className="text-slate-500 text-sm">Create a new construction project</p>
+        </div>
+      </div>
+
+      <form action={formAction} className="space-y-6">
         {state?.error && (
-          <div className="mb-6 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
+          <div className="p-4 text-sm text-rose-700 bg-rose-50 rounded-xl border border-rose-200 font-medium">
             {state.error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="name" className="text-slate-700 font-medium">Project Name *</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="e.g. Skyline Residency"
-              required
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="clientName" className="text-slate-700 font-medium">Client Name *</Label>
-            <Input
-              id="clientName"
-              name="clientName"
-              placeholder="e.g. Acme Corp"
-              required
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="deadline" className="text-slate-700 font-medium">Deadline</Label>
-            <Input
-              id="deadline"
-              name="deadline"
-              type="date"
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900 w-full"
-            />
+        {/* Project Details Card */}
+        <div className="bg-white ring-1 ring-slate-200 shadow-sm rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-indigo-600" />
+            </div>
+            <h3 className="font-semibold text-slate-800">Project Details</h3>
           </div>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="name" className="text-sm font-semibold text-slate-700">Project Name <span className="text-rose-500">*</span></Label>
+              <Input id="name" name="name" placeholder="e.g. Skyline Residency Block A" required
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11" />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="clientPhone" className="text-slate-700 font-medium">Client Phone</Label>
-            <Input
-              id="clientPhone"
-              name="clientPhone"
-              placeholder="+1 (555) 000-0000"
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
-            />
-          </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="clientName" className="text-sm font-semibold text-slate-700">Client Name <span className="text-rose-500">*</span></Label>
+              <Input id="clientName" name="clientName" placeholder="e.g. Acme Corp" required
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11" />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="clientEmail" className="text-slate-700 font-medium">Client Email</Label>
-            <Input
-              id="clientEmail"
-              name="clientEmail"
-              type="email"
-              placeholder="client@acme.com"
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
-            />
-          </div>
-          
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="location" className="text-slate-700 font-medium">Project Location</Label>
-            <Input
-              id="location"
-              name="location"
-              placeholder="e.g. 123 Business Ave, Suite 100"
-              className="bg-white border-slate-300 focus-visible:ring-blue-500 text-slate-900"
-            />
-          </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="deadline" className="text-sm font-semibold text-slate-700">Project Deadline</Label>
+              <Input id="deadline" name="deadline" type="date"
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11 w-full" />
+            </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="description" className="text-slate-700 font-medium">Project Description</Label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              placeholder="Enter detailed project requirements, scope, or notes here..."
-              className="flex w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-slate-900 resize-y"
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="clientPhone" className="text-sm font-semibold text-slate-700">Client Phone</Label>
+              <Input id="clientPhone" name="clientPhone" placeholder="+91 98765 43210"
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="clientEmail" className="text-sm font-semibold text-slate-700">Client Email</Label>
+              <Input id="clientEmail" name="clientEmail" type="email" placeholder="client@company.com"
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11" />
+            </div>
+
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="location" className="text-sm font-semibold text-slate-700">Project Location</Label>
+              <Input id="location" name="location" placeholder="e.g. Kozhikode, Kerala"
+                className="bg-white border-slate-300 focus-visible:ring-indigo-500 text-slate-900 rounded-xl h-11" />
+            </div>
+
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="description" className="text-sm font-semibold text-slate-700">Project Description</Label>
+              <textarea id="description" name="description" rows={4}
+                placeholder="Enter detailed project requirements, scope, and notes..."
+                className="flex w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500
+                  text-slate-900 placeholder:text-slate-400 resize-y transition-colors" />
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4 pt-6 mt-6 border-t border-slate-100">
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-3">
           <Link href="/dashboard/projects">
-            <Button type="button" variant="ghost" className="hover:bg-slate-200 text-slate-700">
+            <Button type="button" variant="outline" className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50">
               Cancel
             </Button>
           </Link>
-          <Button 
-            type="submit" 
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-            disabled={isPending}
-          >
-            {isPending ? "Creating..." : "Create Project"}
+          <Button type="submit" disabled={isPending}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm min-w-[140px]">
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Creating…
+              </span>
+            ) : "Create Project"}
           </Button>
         </div>
       </form>
