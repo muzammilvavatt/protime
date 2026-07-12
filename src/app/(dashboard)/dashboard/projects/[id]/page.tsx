@@ -6,6 +6,8 @@ import { ArrowLeft, FolderKanban, MapPin, Phone, Mail, FileText, Download } from
 import { notFound } from "next/navigation";
 import { FileUpload } from "@/components/FileUpload";
 
+import { ProjectReportButtons } from "@/components/ProjectReportButtons";
+
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const project = await prisma.project.findUnique({
@@ -24,15 +26,32 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      <div className="flex items-center space-x-4">
-        <Link href="/dashboard/projects">
-          <Button variant="outline" size="icon" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{project.name}</h2>
-          <p className="text-slate-500">Project Details & Tasks</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 no-print">
+        <div className="flex items-center space-x-4">
+          <Link href="/dashboard/projects">
+            <Button variant="outline" size="icon" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{project.name}</h2>
+            <p className="text-slate-500">Project Details & Tasks</p>
+          </div>
+        </div>
+        <ProjectReportButtons project={project} tasks={project.tasks} />
+      </div>
+
+      {/* Print-only Header */}
+      <div className="hidden print:block mb-8">
+        <div className="flex justify-between items-end border-b-2 border-slate-800 pb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">{project.name}</h1>
+            <p className="text-slate-600 mt-1">Project Status Report</p>
+          </div>
+          <div className="text-right">
+            <h3 className="font-bold text-slate-900">PROTIME / PRMC</h3>
+            <p className="text-sm text-slate-500">{new Date().toLocaleDateString('en-IN')}</p>
+          </div>
         </div>
       </div>
 

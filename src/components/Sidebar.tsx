@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, Users, FolderKanban, CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X, BriefcaseBusiness } from "lucide-react";
+import { Building2, LayoutDashboard, Users, FolderKanban, CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X, BriefcaseBusiness, FileText } from "lucide-react";
 import { logoutAction } from "@/actions/auth.actions";
 
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
@@ -24,6 +24,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
     { href: "/dashboard/tasks", label: isAdmin ? "All Tasks" : "My Tasks", icon: CheckSquare, adminOnly: false },
     { href: "/dashboard/employees", label: "Employees", icon: Users, adminOnly: true },
     { href: "/dashboard/attendance", label: "Attendance", icon: CheckSquare, adminOnly: true },
+    { href: "/dashboard/reports", label: "Reports", icon: FileText, adminOnly: true },
     { href: "/dashboard/settings/roles", label: "Roles", icon: BriefcaseBusiness, adminOnly: true },
     { href: "/dashboard/settings", label: "Settings", icon: Settings, adminOnly: false, exact: true },
   ];

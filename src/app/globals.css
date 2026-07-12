@@ -126,5 +126,29 @@
   }
   html {
     @apply font-sans;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print, .sidebar, header, nav {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .page-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
