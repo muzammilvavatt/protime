@@ -1,15 +1,129 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { clockInAction, clockOutAction } from "@/actions/attendance.actions";
-import { Clock, LogIn, LogOut, CheckCircle, AlertTriangle, MapPin } from "lucide-react";
+import { Clock, LogIn, LogOut, CheckCircle, AlertTriangle, MapPin, Camera, X } from "lucide-react";
+import Webcam from "react-webcam";
+import * as faceapi from "face-api.js";
+import { createClient } from "@supabase/supabase-js";
+import { Button } from "./ui/button";
 
-export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
+export function AttendanceTracker({ 
+  todayRecord, 
+  user,
+  requireSelfieVerification 
+}: { 
+  todayRecord: any, 
+  user: any,
+  requireSelfieVerification: boolean 
+}) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  // Selfie State
+  const [showCamera, setShowCamera] = useState(false);
+  const [isModelsLoaded, setIsModelsLoaded] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
 
-  const handleClockIn = () => {
+  useEffect(() => {
+    if (showCamera && !isModelsLoaded) {
+      loadModels();
+    }
+  }, [showCamera, isModelsLoaded]);
+
+  const loadModels = async () => {
+    try {
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+      ]);
+      setIsModelsLoaded(true);
+    } catch (err) {
+      console.error("Failed to load models", err);
+      setErrorMsg("Failed to load facial recognition models. Please contact IT.");
+    }
+  };
+
+  const handleInitialClockInClick = () => {
+    if (requireSelfieVerification) {
+      setShowCamera(true);
+      setErrorMsg(null);
+    } else {
+      doClockIn();
+    }
+  };
+
+  const captureAndClockIn = async () => {
+    if (!webcamRef.current) return;
     setErrorMsg(null);
+    setIsAnalyzing(true);
+    
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) {
+      setErrorMsg("Failed to capture image.");
+      setIsAnalyzing(false);
+      return;
+    }
+
+    try {
+      let isMatch = false;
+      let photoUrl = undefined;
+      
+      if (user.profilePictureUrl) {
+        try {
+          const referenceImage = await faceapi.fetchImage(user.profilePictureUrl);
+          const refDetection = await faceapi.detectSingleFace(referenceImage, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+          
+          const capturedImage = await faceapi.fetchImage(imageSrc);
+          const capturedDetection = await faceapi.detectSingleFace(capturedImage, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+          
+          if (refDetection && capturedDetection) {
+            const distance = faceapi.euclideanDistance(refDetection.descriptor, capturedDetection.descriptor);
+            if (distance < 0.6) {
+              isMatch = true; // AI matched!
+            }
+          }
+        } catch (aiError) {
+          console.warn("AI Comparison failed, falling back to manual review.", aiError);
+        }
+      }
+
+      if (!isMatch) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseKey) throw new Error("Supabase credentials missing.");
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        const res = await fetch(imageSrc);
+        const blob = await res.blob();
+        
+        const fileName = `attendance-${user.id}-${Date.now()}.jpeg`;
+        const { error: uploadError } = await supabase.storage
+          .from('uploads')
+          .upload(`attendance-photos/${fileName}`, blob);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('uploads')
+          .getPublicUrl(`attendance-photos/${fileName}`);
+          
+        photoUrl = publicUrl;
+      }
+
+      setShowCamera(false);
+      doClockIn(photoUrl, isMatch);
+    } catch (err: any) {
+      setErrorMsg(err.message || "An error occurred during verification.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const doClockIn = (photoUrl?: string, isPhotoApproved: boolean = false) => {
     if (!navigator.geolocation) {
       setErrorMsg("Geolocation is not supported by your browser.");
       return;
@@ -18,13 +132,11 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
       (position) => {
         const { latitude, longitude } = position.coords;
         startTransition(async () => {
-          const res = await clockInAction({ lat: latitude, lng: longitude });
+          const res = await clockInAction({ lat: latitude, lng: longitude }, photoUrl, isPhotoApproved);
           if (res?.error) setErrorMsg(res.error);
         });
       },
-      () => {
-        setErrorMsg("Failed to get location. Please allow location access.");
-      },
+      () => setErrorMsg("Failed to get location. Please allow location access."),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
@@ -47,7 +159,6 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
 
   return (
     <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden animate-fade-in-up">
-      {/* Gradient Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-violet-700 px-5 py-4 flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center">
           <Clock className="w-5 h-5 text-white" />
@@ -59,7 +170,6 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
       </div>
 
       <div className="p-5 space-y-4">
-        {/* Error Banner */}
         {errorMsg && (
           <div className="flex items-start gap-2.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200 rounded-lg px-3.5 py-3 text-sm">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -67,8 +177,65 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
           </div>
         )}
 
-        {/* State: Not clocked in yet */}
-        {!hasClockedIn && (
+        {/* Camera View State */}
+        {showCamera && !hasClockedIn && (
+          <div className="space-y-4 animate-fade-in-up">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold text-slate-900 text-sm">Selfie Verification</h3>
+              <button onClick={() => setShowCamera(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="relative rounded-xl overflow-hidden bg-slate-900 aspect-video ring-1 ring-slate-200">
+              {!isModelsLoaded ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white/70">
+                  <svg className="animate-spin w-8 h-8 mb-3 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <span className="text-xs font-medium tracking-widest uppercase">Initializing AI</span>
+                </div>
+              ) : (
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{ facingMode: "user" }}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            
+            <Button
+              onClick={captureAndClockIn}
+              disabled={!isModelsLoaded || isAnalyzing}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-5 shadow-sm font-semibold"
+            >
+              {isAnalyzing ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Verifying Face...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Camera className="w-5 h-5" /> Capture & Clock In
+                </span>
+              )}
+            </Button>
+            {!user.profilePictureUrl && isModelsLoaded && (
+               <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg text-center">
+                 You haven't uploaded a profile picture in Settings. Your selfie will be manually reviewed by Admin.
+               </p>
+            )}
+          </div>
+        )}
+
+        {/* Default State: Not clocked in */}
+        {!hasClockedIn && !showCamera && (
           <div className="flex flex-col items-center text-center py-4 space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center ring-1 ring-indigo-100">
               <LogIn className="w-8 h-8 text-indigo-500" />
@@ -80,7 +247,7 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
               </p>
             </div>
             <button
-              onClick={handleClockIn}
+              onClick={handleInitialClockInClick}
               disabled={isPending}
               className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg px-4 py-2.5 transition-colors duration-150 flex items-center justify-center gap-2"
             >
@@ -94,7 +261,7 @@ export function AttendanceTracker({ todayRecord }: { todayRecord: any }) {
                 </>
               ) : (
                 <>
-                  <LogIn className="w-4 h-4" /> Clock In
+                  <LogIn className="w-4 h-4" /> {requireSelfieVerification ? "Verify & Clock In" : "Clock In"}
                 </>
               )}
             </button>

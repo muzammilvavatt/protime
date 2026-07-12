@@ -17,6 +17,7 @@ model User {
   role          String         @default("EMPLOYEE") // ADMIN, EMPLOYEE
   isWFH         Boolean        @default(false)
   isActive      Boolean        @default(true)
+  profilePictureUrl String?    // For AI face reference
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -138,15 +139,17 @@ model ActivityLog {
 }
 
 model Attendance {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date      DateTime  // Stored as Date without time
-  clockIn   DateTime
-  clockOut  DateTime?
-  status    String    @default("PRESENT") // PRESENT, HALF_DAY, LATE
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime  // Stored as Date without time
+  clockIn         DateTime
+  clockOut        DateTime?
+  status          String    @default("PRESENT") // PRESENT, HALF_DAY, LATE
+  photoUrl        String?   // Uploaded selfie if AI fails
+  isPhotoApproved Boolean   @default(false) // True if AI matches or Admin approves
 
-  createdAt DateTime  @default(now())
+  createdAt       DateTime  @default(now())
 }
 
 model ProjectRole {
@@ -198,4 +201,9 @@ model DailyTaskLog {
   dailyResponsibility DailyResponsibility @relation(fields: [dailyResponsibilityId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dailyResponsibilityId, date])
+}
+
+model GlobalSetting {
+  id                        String  @id @default("global")
+  requireSelfieVerification Boolean @default(true)
 }

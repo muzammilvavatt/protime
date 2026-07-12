@@ -11,6 +11,7 @@ interface EmployeeDashboardProps {
   dailyChecklistData: any[];
   myProjectTasks: any[];
   totalHoursToday: string;
+  requireSelfieVerification: boolean;
 }
 
 const getPriorityBorderClass = (priority: string) => {
@@ -43,6 +44,7 @@ export function EmployeeDashboard({
   dailyChecklistData,
   myProjectTasks,
   totalHoursToday,
+  requireSelfieVerification,
 }: EmployeeDashboardProps) {
   const firstName = user?.name ? user.name.split(" ")[0] : "Employee";
   const pendingChecklistCount = dailyChecklistData.filter(
@@ -248,9 +250,12 @@ export function EmployeeDashboard({
           </div>
         </div>
 
-        {/* Right Column: Attendance + Daily Checklist */}
         <div className="xl:col-span-1 space-y-6">
-          <AttendanceTracker todayRecord={todayRecord} />
+          <AttendanceTracker 
+            todayRecord={todayRecord} 
+            user={user} 
+            requireSelfieVerification={requireSelfieVerification} 
+          />
           <DailyChecklist tasks={dailyChecklistData} />
         </div>
       </div>

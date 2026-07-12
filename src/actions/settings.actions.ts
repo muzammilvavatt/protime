@@ -106,3 +106,28 @@ export async function changePasswordAction(prevState: any, formData: FormData) {
     return { error: "Failed to update password." };
   }
 }
+
+// --- GLOBAL SETTINGS ---
+
+export async function updateGlobalSettingsAction(requireSelfieVerification: boolean) {
+  await requireAdmin();
+  await prisma.globalSetting.upsert({
+    where: { id: "global" },
+    update: { requireSelfieVerification },
+    create: { id: "global", requireSelfieVerification },
+  });
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
+}
+
+export async function updateProfilePictureAction(url: string) {
+  const session = await getSession();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+  
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { profilePictureUrl: url }
+  });
+  revalidatePath("/dashboard/settings");
+  return { success: true };
+}

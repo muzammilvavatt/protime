@@ -132,12 +132,17 @@ export default async function DashboardPage() {
       totalHoursToday = `${diffHrs}h ${diffMins}m`;
     }
 
+    const globalSetting = await prisma.globalSetting.findUnique({
+      where: { id: "global" }
+    });
+
     employeeData = {
       user: dbUser,
       todayRecord,
       dailyChecklistData,
       myProjectTasks,
       totalHoursToday,
+      requireSelfieVerification: globalSetting?.requireSelfieVerification ?? true,
     };
   }
 

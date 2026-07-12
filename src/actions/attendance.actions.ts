@@ -20,7 +20,11 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   return R * c;
 }
 
-export async function clockInAction(coords?: { lat: number, lng: number }) {
+export async function clockInAction(
+  coords?: { lat: number, lng: number },
+  photoUrl?: string,
+  isPhotoApproved: boolean = false
+) {
   const session = await getSession();
   if (!session?.user?.id) {
     return { error: "Unauthorized" };
@@ -79,6 +83,8 @@ export async function clockInAction(coords?: { lat: number, lng: number }) {
       date: todayStart,
       clockIn: now,
       status,
+      photoUrl,
+      isPhotoApproved,
     }
   });
 
@@ -158,5 +164,32 @@ export async function clockOutAction() {
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/attendance");
+}
+
+export async function approveAttendancePhotoAction(attendanceId: string) {
+  const session = await getSession();
+  if (!session || session.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const attendance = await prisma.attendance.findUnique({
+    where: { id: attendanceId }
+  });
+
+  if (!attendance || !attendance.photoUrl) return;
+
+  // We could delete from Supabase storage here via Admin API, 
+  // but we can also just wipe the URL from the DB for simplicity and 
+  // let a cron job clean up unreferenced photos, or do it immediately.
+  
+  await prisma.attendance.update({
+    where: { id: attendanceId },
+    data: { 
+      isPhotoApproved: true,
+      photoUrl: null // Wipe it from DB
+    }
+  });
+
   revalidatePath("/dashboard/attendance");
 }

@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertCircle, Camera } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AttendanceDatePicker } from "@/components/AttendanceDatePicker";
+import { approveAttendancePhotoAction } from "@/actions/attendance.actions";
 
 export default async function AttendanceAdminPage(props: { searchParams?: Promise<{ date?: string }> }) {
   const session = await getSession();
@@ -116,6 +117,7 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Employee</th>
                 <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Verification</th>
                 <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Clock In</th>
                 <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Clock Out</th>
                 <th className="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Hours</th>
@@ -153,6 +155,28 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                           <CheckCircle2 className="w-3 h-3" /> Present
                         </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {record?.photoUrl ? (
+                        <div className="flex items-center gap-3">
+                          <a href={record.photoUrl} target="_blank" rel="noreferrer">
+                            <img src={record.photoUrl} alt="Selfie" className="w-10 h-10 object-cover rounded-lg ring-1 ring-slate-200 shadow-sm" />
+                          </a>
+                          {!record.isPhotoApproved && (
+                             <form action={approveAttendancePhotoAction.bind(null, record.id)}>
+                               <button type="submit" className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 rounded-md font-semibold ring-1 ring-indigo-200 transition-colors shadow-sm">
+                                 Approve
+                               </button>
+                             </form>
+                          )}
+                        </div>
+                      ) : record?.isPhotoApproved ? (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                          <CheckCircle2 className="w-3 h-3" /> AI Matched
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-700 tabular-nums">
