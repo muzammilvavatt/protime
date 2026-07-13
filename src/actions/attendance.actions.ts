@@ -20,6 +20,21 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   return R * c;
 }
 
+export async function resetClockOutAction(attendanceId: string) {
+  const session = await getSession();
+  if (!session || session.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.attendance.update({
+    where: { id: attendanceId },
+    data: { clockOut: null }
+  });
+
+  revalidatePath("/dashboard/attendance");
+  return { success: true };
+}
+
 export async function clockInAction(
   coords?: { lat: number, lng: number },
   photoUrl?: string,

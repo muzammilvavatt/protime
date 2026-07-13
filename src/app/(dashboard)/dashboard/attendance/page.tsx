@@ -5,7 +5,8 @@ import { Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertCircle, Ca
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AttendanceDatePicker } from "@/components/AttendanceDatePicker";
-import { approveAttendancePhotoAction, rejectAttendanceAction } from "@/actions/attendance.actions";
+import { approveAttendancePhotoAction, rejectAttendanceAction, resetClockOutAction } from "@/actions/attendance.actions";
+import { RotateCcw } from "lucide-react";
 
 export default async function AttendanceAdminPage(props: { searchParams?: Promise<{ date?: string }> }) {
   const session = await getSession();
@@ -190,7 +191,18 @@ export default async function AttendanceAdminPage(props: { searchParams?: Promis
                       {record ? formatTime(record.clockIn) : <span className="text-slate-300">—</span>}
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-700 tabular-nums">
-                      {record ? formatTime(record.clockOut) : <span className="text-slate-300">—</span>}
+                      {record ? (
+                        <div className="flex items-center gap-2">
+                          {formatTime(record.clockOut)}
+                          {record.clockOut && (
+                            <form action={resetClockOutAction.bind(null, record.id)}>
+                              <Button type="submit" variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-rose-500 hover:bg-rose-50" title="Reset Clock Out">
+                                <RotateCcw className="w-3 h-3" />
+                              </Button>
+                            </form>
+                          )}
+                        </div>
+                      ) : <span className="text-slate-300">—</span>}
                     </td>
                     <td className="px-6 py-4">
                       {record ? (
