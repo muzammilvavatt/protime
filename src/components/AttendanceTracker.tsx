@@ -85,10 +85,8 @@ export function AttendanceTracker({
             
             // VERY STRICT threshold. Default is 0.6. 
             // 0.38 prevents almost all false positives.
-            if (distance < 0.38) {
+            if (distance < 0.45) {
               isMatch = true; // AI matched!
-            } else {
-              alert(`Debug: Faces did not match. Distance: ${distance.toFixed(3)} (needs to be < 0.38)`);
             }
           }
         } catch (aiError) {
