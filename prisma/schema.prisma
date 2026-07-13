@@ -101,8 +101,8 @@ model File {
   type        String   // e.g., pdf, dwg, image/png
   size        Int      // in bytes
   
-  uploadedById String
-  uploader    User     @relation(fields: [uploadedById], references: [id])
+  uploadedById String?
+  uploader    User?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   
   projectId   String?
   project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)

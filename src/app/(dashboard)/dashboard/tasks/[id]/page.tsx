@@ -161,7 +161,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                           {file.name}
                         </p>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">
-                          {Math.round(file.size / 1024)} KB • By {file.uploader.name.split(" ")[0]}
+                          {Math.round(file.size / 1024)} KB • By {file.uploader ? file.uploader.name.split(" ")[0] : "Deleted User"}
                         </p>
                       </div>
                       <a href={file.url} target="_blank" rel="noopener noreferrer" download>
