@@ -12,6 +12,10 @@ import {
   Activity,
   UserPlus,
   ArrowRight,
+  Clock,
+  CalendarDays,
+  AlertTriangle,
+  TrendingUp,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
@@ -30,31 +34,103 @@ export default async function DashboardPage() {
   // --- ADMIN DATA FETCHING ---
   let adminData = null;
   if (isAdmin) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
     const [
       employeeCount,
+      activeEmployeeCount,
       projectCount,
+      activeProjectCount,
       taskCount,
       pendingTaskCount,
       inProgressCount,
       doneCount,
+      reviewCount,
+      overdueTasks,
+      upcomingDeadlineTasks,
+      todayAttendanceCount,
       usersWithTasks,
+      recentTaskUpdates,
+      recentEmployees,
     ] = await Promise.all([
       prisma.user.count(),
+      prisma.user.count({ where: { isActive: true } }),
       prisma.project.count(),
+      prisma.project.count({ where: { status: "ACTIVE" } }),
       prisma.task.count(),
       prisma.task.count({ where: { status: "PENDING" } }),
       prisma.task.count({ where: { status: "IN_PROGRESS" } }),
       prisma.task.count({ where: { status: "COMPLETED" } }),
+      prisma.task.count({ where: { status: "REVIEW" } }),
+      // Overdue: has deadline, deadline passed, not completed
+      prisma.task.findMany({
+        where: {
+          deadline: { lt: new Date() },
+          status: { not: "COMPLETED" },
+        },
+        select: {
+          id: true,
+          name: true,
+          deadline: true,
+          priority: true,
+          project: { select: { name: true } },
+          assignees: { select: { user: { select: { name: true } } }, take: 1 },
+        },
+        orderBy: { deadline: "asc" },
+        take: 5,
+      }),
+      // Upcoming deadlines: next 7 days
+      prisma.task.findMany({
+        where: {
+          deadline: { gte: new Date(), lte: nextWeek },
+          status: { not: "COMPLETED" },
+        },
+        select: {
+          id: true,
+          name: true,
+          deadline: true,
+          priority: true,
+          status: true,
+          project: { select: { name: true } },
+        },
+        orderBy: { deadline: "asc" },
+        take: 5,
+      }),
+      // Today's attendance
+      prisma.attendance.count({
+        where: { date: { gte: todayStart } },
+      }),
       prisma.user.findMany({
         include: { _count: { select: { assignedTasks: true } } },
         take: 10,
         orderBy: { assignedTasks: { _count: "desc" } },
       }),
+      prisma.task.findMany({
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          updatedAt: true,
+          project: { select: { name: true } },
+        },
+      }),
+      prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        select: { id: true, name: true, createdAt: true, role: true },
+      }),
     ]);
 
     const taskDistributionData = [
       { name: "To Do", value: pendingTaskCount, color: "#94a3b8" },
-      { name: "In Progress", value: inProgressCount, color: "#3b82f6" },
+      { name: "In Progress", value: inProgressCount, color: "#6366f1" },
+      { name: "Review", value: reviewCount, color: "#8b5cf6" },
       { name: "Done", value: doneCount, color: "#22c55e" },
     ];
 
@@ -65,24 +141,18 @@ export default async function DashboardPage() {
       }))
       .filter((u) => u.tasks > 0);
 
-    const [recentTaskUpdates, recentEmployees] = await Promise.all([
-      prisma.task.findMany({
-        orderBy: { updatedAt: "desc" },
-        take: 5,
-        select: { id: true, name: true, status: true, updatedAt: true, project: { select: { name: true } } },
-      }),
-      prisma.user.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 3,
-        select: { id: true, name: true, createdAt: true, role: true },
-      }),
-    ]);
-
     adminData = {
       employeeCount,
+      activeEmployeeCount,
       projectCount,
+      activeProjectCount,
       taskCount,
       pendingTaskCount,
+      inProgressCount,
+      reviewCount,
+      overdueTasks,
+      upcomingDeadlineTasks,
+      todayAttendanceCount,
       taskDistributionData,
       employeeWorkloadData,
       recentTaskUpdates,
@@ -176,22 +246,29 @@ export default async function DashboardPage() {
     day: "numeric",
   });
 
+  // Attendance percentage for admin
+  const attendancePercent = adminData
+    ? Math.round((adminData.todayAttendanceCount / Math.max(adminData.activeEmployeeCount, 1)) * 100)
+    : 0;
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {!isAdmin && employeeData && <EmployeeDashboard {...employeeData} />}
 
       {isAdmin && adminData && (
         <>
           {/* ── Welcome Strip ── */}
-          <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-xl ring-1 ring-slate-200 shadow-sm px-6 py-5">
-            <div>
+          <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-xl ring-1 ring-slate-200 shadow-sm px-6 py-5 relative overflow-hidden">
+            {/* decorative */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-50 to-transparent rounded-bl-full pointer-events-none" />
+            <div className="relative z-10">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 {greeting}, Admin 👋
               </h1>
               <p className="text-sm text-slate-500 mt-0.5">{todayLabel}</p>
             </div>
             {/* Quick Actions */}
-            <div className="flex flex-wrap gap-2 no-print">
+            <div className="flex flex-wrap gap-2 no-print relative z-10">
               <Link href="/dashboard/projects/add">
                 <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors shadow-sm">
                   <Plus className="w-4 h-4" />
@@ -207,17 +284,52 @@ export default async function DashboardPage() {
               <Link href="/dashboard/reports">
                 <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium ring-1 ring-slate-200 transition-colors shadow-sm">
                   <FileBarChart2 className="w-4 h-4 text-indigo-500" />
-                  View Reports
+                  Reports
                 </button>
               </Link>
             </div>
           </div>
 
-          {/* ── Stat Cards (clickable) ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children animate-fade-in-up">
+          {/* ── Overdue Tasks Alert ── */}
+          {adminData.overdueTasks.length > 0 && (
+            <div className="animate-fade-in-up bg-rose-50 ring-1 ring-rose-200 rounded-xl p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0 mt-0.5">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-rose-800">
+                  {adminData.overdueTasks.length} overdue task{adminData.overdueTasks.length > 1 ? "s" : ""} need attention
+                </p>
+                <div className="mt-2 space-y-1.5">
+                  {adminData.overdueTasks.slice(0, 3).map((task) => (
+                    <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
+                      <div className="flex items-center gap-2 text-xs text-rose-700 hover:text-rose-900 transition-colors group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+                        <span className="font-semibold truncate group-hover:underline">{task.name}</span>
+                        <span className="text-rose-500 shrink-0">· {task.project.name}</span>
+                        {task.deadline && (
+                          <span className="text-rose-400 shrink-0 ml-auto">
+                            Due {new Date(task.deadline).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                {adminData.overdueTasks.length > 3 && (
+                  <Link href="/dashboard/tasks" className="text-xs text-rose-600 font-semibold mt-2 inline-flex items-center gap-1 hover:text-rose-800">
+                    View all overdue tasks <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Stat Cards Row 1: Key Metrics (clickable) ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children animate-fade-in-up">
             {/* Projects */}
             <Link href="/dashboard/projects">
-              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-4 relative overflow-hidden hover:ring-indigo-300 hover:shadow-md transition-all group cursor-pointer">
+              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-3 relative overflow-hidden hover:ring-indigo-300 hover:shadow-md transition-all group cursor-pointer h-full">
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center shrink-0 group-hover:from-indigo-100 group-hover:to-indigo-200 transition-colors">
                     <FolderKanban className="w-5 h-5 text-indigo-600" />
@@ -225,10 +337,11 @@ export default async function DashboardPage() {
                   <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div>
-                  <div className="text-4xl font-bold tracking-tight text-slate-900">
+                  <div className="text-3xl font-bold tracking-tight text-slate-900">
                     {adminData.projectCount}
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Total Projects</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Total Projects</p>
+                  <p className="text-[10px] text-indigo-600 font-semibold mt-1">{adminData.activeProjectCount} active</p>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-b-xl" />
               </div>
@@ -236,7 +349,7 @@ export default async function DashboardPage() {
 
             {/* Tasks */}
             <Link href="/dashboard/tasks">
-              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-4 relative overflow-hidden hover:ring-emerald-300 hover:shadow-md transition-all group cursor-pointer">
+              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-3 relative overflow-hidden hover:ring-emerald-300 hover:shadow-md transition-all group cursor-pointer h-full">
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center shrink-0 group-hover:from-emerald-100 group-hover:to-emerald-200 transition-colors">
                     <CheckSquare className="w-5 h-5 text-emerald-600" />
@@ -244,18 +357,19 @@ export default async function DashboardPage() {
                   <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div>
-                  <div className="text-4xl font-bold tracking-tight text-slate-900">
+                  <div className="text-3xl font-bold tracking-tight text-slate-900">
                     {adminData.taskCount}
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Total Tasks</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Total Tasks</p>
+                  <p className="text-[10px] text-emerald-600 font-semibold mt-1">{adminData.inProgressCount} in progress</p>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-b-xl" />
               </div>
             </Link>
 
-            {/* Pending */}
+            {/* Pending + Review */}
             <Link href="/dashboard/tasks">
-              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-4 relative overflow-hidden hover:ring-amber-300 hover:shadow-md transition-all group cursor-pointer">
+              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-3 relative overflow-hidden hover:ring-amber-300 hover:shadow-md transition-all group cursor-pointer h-full">
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center shrink-0 group-hover:from-amber-100 group-hover:to-amber-200 transition-colors">
                     <AlertCircle className="w-5 h-5 text-amber-600" />
@@ -263,10 +377,13 @@ export default async function DashboardPage() {
                   <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div>
-                  <div className="text-4xl font-bold tracking-tight text-slate-900">
+                  <div className="text-3xl font-bold tracking-tight text-slate-900">
                     {adminData.pendingTaskCount}
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Pending Tasks</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Pending Tasks</p>
+                  {adminData.reviewCount > 0 && (
+                    <p className="text-[10px] text-violet-600 font-semibold mt-1">{adminData.reviewCount} awaiting review</p>
+                  )}
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-amber-500 rounded-b-xl" />
               </div>
@@ -274,7 +391,7 @@ export default async function DashboardPage() {
 
             {/* Employees */}
             <Link href="/dashboard/employees">
-              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-4 relative overflow-hidden hover:ring-violet-300 hover:shadow-md transition-all group cursor-pointer">
+              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col gap-3 relative overflow-hidden hover:ring-violet-300 hover:shadow-md transition-all group cursor-pointer h-full">
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 flex items-center justify-center shrink-0 group-hover:from-violet-100 group-hover:to-violet-200 transition-colors">
                     <Users className="w-5 h-5 text-violet-600" />
@@ -282,25 +399,103 @@ export default async function DashboardPage() {
                   <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div>
-                  <div className="text-4xl font-bold tracking-tight text-slate-900">
+                  <div className="text-3xl font-bold tracking-tight text-slate-900">
                     {adminData.employeeCount}
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Employees</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Employees</p>
+                  <p className="text-[10px] text-violet-600 font-semibold mt-1">{adminData.activeEmployeeCount} active</p>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-400 to-violet-600 rounded-b-xl" />
               </div>
             </Link>
           </div>
 
-          {/* ── Charts + Recent Activity ── */}
+          {/* ── Row 2: Today's Attendance + Upcoming Deadlines ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-in-up">
+            {/* Today's Attendance Card */}
+            <Link href="/dashboard/attendance">
+              <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex items-center gap-5 hover:ring-indigo-300 hover:shadow-md transition-all group cursor-pointer">
+                {/* Circular Progress */}
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="30" fill="none" stroke="#f1f5f9" strokeWidth="6" />
+                    <circle
+                      cx="36" cy="36" r="30" fill="none"
+                      stroke={attendancePercent >= 80 ? "#22c55e" : attendancePercent >= 50 ? "#f59e0b" : "#ef4444"}
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(attendancePercent / 100) * 188.5} 188.5`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-slate-900">{attendancePercent}%</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-indigo-500" />
+                    <h3 className="text-sm font-bold text-slate-800">Today&apos;s Attendance</h3>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all ml-auto" />
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    {adminData.todayAttendanceCount}
+                    <span className="text-base font-medium text-slate-400"> / {adminData.activeEmployeeCount}</span>
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">employees clocked in today</p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Upcoming Deadlines */}
+            <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-slate-800">Upcoming Deadlines</h3>
+                <span className="text-[10px] text-slate-400 font-medium ml-1">next 7 days</span>
+              </div>
+              {adminData.upcomingDeadlineTasks.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-xs text-slate-400 font-medium">No upcoming deadlines this week 🎉</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50">
+                  {adminData.upcomingDeadlineTasks.map((task) => {
+                    const daysLeft = task.deadline
+                      ? Math.ceil((new Date(task.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                      : 0;
+                    const urgencyClass = daysLeft <= 1
+                      ? "text-rose-600 bg-rose-50 ring-rose-200"
+                      : daysLeft <= 3
+                        ? "text-amber-600 bg-amber-50 ring-amber-200"
+                        : "text-slate-600 bg-slate-50 ring-slate-200";
+                    return (
+                      <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
+                        <div className="px-5 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors group">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{task.name}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{task.project.name}</p>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 shrink-0 ${urgencyClass}`}>
+                            {daysLeft <= 0 ? "Today" : daysLeft === 1 ? "Tomorrow" : `${daysLeft}d left`}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Row 3: Charts + Activity Feed ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
             {/* Charts (2/3 width) */}
             <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
               <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
                 <CardHeader className="border-b border-slate-100 pb-4">
-                  <CardTitle className="flex items-center text-lg font-bold text-slate-800">
-                    <PieChartIcon className="w-5 h-5 mr-2 text-indigo-600" />
-                    Task Status
+                  <CardTitle className="flex items-center text-sm font-bold text-slate-800">
+                    <PieChartIcon className="w-4 h-4 mr-2 text-indigo-600" />
+                    Task Distribution
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -310,8 +505,8 @@ export default async function DashboardPage() {
 
               <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
                 <CardHeader className="border-b border-slate-100 pb-4">
-                  <CardTitle className="flex items-center text-lg font-bold text-slate-800">
-                    <BarChart3 className="w-5 h-5 mr-2 text-indigo-600" />
+                  <CardTitle className="flex items-center text-sm font-bold text-slate-800">
+                    <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
                     Employee Workload
                   </CardTitle>
                 </CardHeader>
@@ -321,14 +516,14 @@ export default async function DashboardPage() {
               </Card>
             </div>
 
-            {/* Recent Activity Feed (1/3 width) */}
+            {/* Activity Feed (1/3 width) */}
             <div className="space-y-5">
-              {/* Recent Task Updates */}
+              {/* Recent Task Activity */}
               <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
                 <CardHeader className="border-b border-slate-100 pb-3 pt-4 px-5">
                   <CardTitle className="flex items-center text-sm font-bold text-slate-800">
                     <Activity className="w-4 h-4 mr-2 text-indigo-500" />
-                    Recent Task Activity
+                    Recent Activity
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -356,7 +551,7 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
 
-              {/* Recently Added Employees */}
+              {/* New Team Members */}
               <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
                 <CardHeader className="border-b border-slate-100 pb-3 pt-4 px-5">
                   <CardTitle className="flex items-center text-sm font-bold text-slate-800">
