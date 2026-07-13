@@ -106,7 +106,7 @@ export function ProfilePictureForm({ user }: { user: { id: string, profilePictur
       const filePath = `profile-pictures/${fileName}`;
 
       const publicUrl = await uploadFileToServerAction(formData, filePath);
-      const res = await updateProfilePictureAction(publicUrl);
+      const _res = await updateProfilePictureAction(publicUrl);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Failed to upload image");

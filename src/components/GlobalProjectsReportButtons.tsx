@@ -21,7 +21,7 @@ export function GlobalProjectsReportButtons({ projects }: { projects: { name: st
     } else {
       projects.forEach(p => {
         const statusStr = p.status === "COMPLETED" ? "*Completed* ✅" : `*${p.status.replace(/_/g, " ")}* ⏳`;
-        const completedTasks = p.tasks ? p.tasks.filter((t: any) => t.status === "COMPLETED").length : 0;
+        const completedTasks = p.tasks ? p.tasks.filter((t: { status: string }) => t.status === "COMPLETED").length : 0;
         const totalTasks = p.tasks ? p.tasks.length : p._count?.tasks || 0;
         textLines.push(`- *${p.name}* (${p.clientName}): ${statusStr} [${completedTasks}/${totalTasks} Tasks]`);
       });

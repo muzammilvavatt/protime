@@ -18,6 +18,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   useEffect(() => {
     // Only update state if it's currently open to avoid cascading renders
     if (isMobileOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsMobileOpen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,8 +72,8 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         {/* Logo */}
         <div className={`h-16 flex items-center border-b border-white/10 px-5 shrink-0 ${isCollapsed ? "md:justify-center md:px-0" : ""}`}>
           <div className={`flex items-center gap-2.5 ${isCollapsed ? "md:gap-0" : ""}`}>
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0">
-              <span className="text-white text-xs font-black">P</span>
+            <div className="w-8 h-8 rounded-lg bg-white overflow-hidden flex items-center justify-center p-1 shrink-0">
+              <img src="/logo.png" alt="PROTIME Logo" className="w-full h-full object-contain" />
             </div>
             <span className={`text-white font-bold text-lg tracking-tight ${isCollapsed ? "md:hidden" : ""}`}>
               PROTIME

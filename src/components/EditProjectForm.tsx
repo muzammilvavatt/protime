@@ -9,7 +9,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 
-export function EditProjectForm({ project }: { project: any }) {
+interface EditableProject {
+  id: string;
+  name: string;
+  description: string | null;
+  clientName: string;
+  clientPhone: string | null;
+  clientEmail: string | null;
+  location: string | null;
+  deadline: string | Date | null;
+  status: string;
+}
+
+export function EditProjectForm({ project }: { project: EditableProject }) {
   const editActionWithId = editProjectAction.bind(null, project.id);
   const [state, formAction, isPending] = useActionState(editActionWithId, undefined);
 

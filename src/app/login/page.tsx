@@ -23,8 +23,8 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg">
-            <span className="text-white text-base font-black">P</span>
+          <div className="w-10 h-10 rounded-xl bg-white shadow-lg overflow-hidden flex items-center justify-center p-1.5">
+            <img src="/logo.png" alt="PROTIME Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <span className="text-white text-2xl font-bold tracking-tight">PROTIME</span>
@@ -58,8 +58,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8 animate-fade-in-up">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-              <span className="text-white text-sm font-black">P</span>
+            <div className="w-8 h-8 rounded-lg bg-white shadow-sm overflow-hidden flex items-center justify-center p-1">
+              <img src="/logo.png" alt="PROTIME" className="w-full h-full object-contain" />
             </div>
             <span className="text-slate-800 text-xl font-bold tracking-tight">PROTIME</span>
           </div>

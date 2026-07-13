@@ -5,7 +5,14 @@ import { toggleDailyTaskAction } from "@/actions/daily-tasks.actions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle2, Circle, ListTodo } from "lucide-react";
 
-export function DailyChecklist({ tasks }: { tasks: any[] }) {
+interface ChecklistTask {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+}
+
+export function DailyChecklist({ tasks }: { tasks: ChecklistTask[] }) {
   const [isPending, startTransition] = useTransition();
 
   const handleToggle = (id: string, currentStatus: string) => {

@@ -11,6 +11,7 @@ interface SessionPayload {
 }
 
 export async function encrypt(payload: SessionPayload) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return await new SignJWT(payload as any)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

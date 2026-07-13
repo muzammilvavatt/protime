@@ -49,7 +49,6 @@ export function EmployeeDashboard({
 }: EmployeeDashboardProps) {
   const firstName = user?.name ? user.name.split(" ")[0] : "Employee";
   const pendingChecklistCount = dailyChecklistData.filter((t) => t.status === "PENDING").length;
-  const completedChecklistCount = dailyChecklistData.length - pendingChecklistCount;
 
   const options: Intl.DateTimeFormatOptions = {
     weekday: "long",

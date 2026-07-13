@@ -5,15 +5,22 @@ import { Bell } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getNotificationsAction, markNotificationsAsReadAction } from "@/actions/notification.actions";
 
+interface AppNotification {
+  id: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date | string;
+}
+
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     async function fetchNotifs() {
       const res = await getNotificationsAction();
       setNotifications(res.notifications);
-      setUnreadCount(res.notifications.filter((n: any) => !n.isRead).length);
+      setUnreadCount(res.notifications.filter((n: AppNotification) => !n.isRead).length);
     }
     fetchNotifs();
   }, []);

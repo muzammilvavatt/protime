@@ -5,7 +5,7 @@ import { editEmployeeAction } from "@/actions/employee.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, UserCog } from "lucide-react";
 import Link from "next/link";
 
@@ -16,9 +16,9 @@ export function EditEmployeeForm({
   assignedProjectRoles,
   assignedDailyResponsibilities
 }: { 
-  employee: any,
-  projectRoles: any[], 
-  dailyResponsibilities: any[],
+  employee: { id: string; name: string; email: string; phoneNumber: string | null; role: string },
+  projectRoles: { id: string; name: string; description: string | null }[], 
+  dailyResponsibilities: { id: string; name: string; description: string | null }[],
   assignedProjectRoles: string[],
   assignedDailyResponsibilities: string[]
 }) {
@@ -35,7 +35,7 @@ export function EditEmployeeForm({
         </Link>
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Edit Employee</h2>
-          <p className="text-slate-500 text-sm">Update {employee.name}'s details.</p>
+          <p className="text-slate-500 text-sm">Update {employee.name}&apos;s details.</p>
         </div>
       </div>
 

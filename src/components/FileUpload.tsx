@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { uploadFileAction } from "@/actions/file.actions";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, File, Loader2 } from "lucide-react";
+import { UploadCloud, Loader2 } from "lucide-react";
 
 export function FileUpload({ taskId, projectId }: { taskId?: string, projectId?: string }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -26,7 +26,7 @@ export function FileUpload({ taskId, projectId }: { taskId?: string, projectId?:
       } else {
         formRef.current?.reset();
       }
-    } catch (err) {
+    } catch (_err) {
       setIsUploading(false);
       setError("File is too large or upload failed.");
     }

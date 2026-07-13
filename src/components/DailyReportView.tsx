@@ -4,7 +4,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Copy, Check, CheckCircle2, Clock } from "lucide-react";
 
-export function DailyReportView({ tasks, date }: { tasks: any[], date: string }) {
+interface TaskAssigneeEntry {
+  user: { name: string };
+}
+
+interface ReportTask {
+  id: string;
+  name: string;
+  status: string;
+  timeSpentMs: number | null;
+  project?: { name: string } | null;
+  assignees: TaskAssigneeEntry[];
+}
+
+export function DailyReportView({ tasks, date }: { tasks: ReportTask[], date: string }) {
   const [copied, setCopied] = useState(false);
 
   const formattedDate = new Date(date).toLocaleDateString('en-IN', {
@@ -22,7 +35,7 @@ export function DailyReportView({ tasks, date }: { tasks: any[], date: string })
       textLines.push(`No tasks were updated today.`);
     } else {
       tasks.forEach(task => {
-        const assignees = task.assignees.map((a: any) => a.user.name).join(", ") || "Unassigned";
+        const assignees = task.assignees.map((a: TaskAssigneeEntry) => a.user.name).join(", ") || "Unassigned";
         const statusStr = task.status === "COMPLETED" ? "*Completed* ✅" : `*${task.status.replace(/_/g, " ")}* ⏳`;
         const timeSpent = task.timeSpentMs ? (task.timeSpentMs / (1000 * 60 * 60)).toFixed(1) + 'h' : '0h';
         const project = task.project ? task.project.name : "No Project";
@@ -89,7 +102,7 @@ export function DailyReportView({ tasks, date }: { tasks: any[], date: string })
               </thead>
               <tbody className="divide-y divide-slate-100 print:divide-slate-200">
                 {tasks.map((task) => {
-                  const assignees = task.assignees.map((a: any) => a.user.name).join(", ") || "Unassigned";
+                  const assignees = task.assignees.map((a: TaskAssigneeEntry) => a.user.name).join(", ") || "Unassigned";
                   const isCompleted = task.status === "COMPLETED";
                   const timeSpent = task.timeSpentMs
                     ? (task.timeSpentMs / (1000 * 60 * 60)).toFixed(2) + 'h'

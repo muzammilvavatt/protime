@@ -19,8 +19,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { TaskDistributionChart } from "@/components/charts/TaskDistributionChart";
-import { EmployeeWorkloadChart } from "@/components/charts/EmployeeWorkloadChart";
+
 import { EmployeeDashboard } from "@/components/EmployeeDashboard";
 import Link from "next/link";
 
@@ -53,7 +52,8 @@ export default async function DashboardPage() {
       overdueTasks,
       upcomingDeadlineTasks,
       todayAttendanceCount,
-      usersWithTasks,
+      topActiveProjects,
+      topPerformers,
       recentTaskUpdates,
       recentEmployees,
     ] = await Promise.all([
@@ -104,10 +104,36 @@ export default async function DashboardPage() {
       prisma.attendance.count({
         where: { date: { gte: todayStart } },
       }),
+      // Top active projects
+      prisma.project.findMany({
+        where: { status: "ACTIVE" },
+        include: {
+          tasks: { select: { status: true } },
+          _count: { select: { tasks: true } }
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4
+      }),
+      // Top performers
       prisma.user.findMany({
-        include: { _count: { select: { assignedTasks: true } } },
-        take: 10,
-        orderBy: { assignedTasks: { _count: "desc" } },
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          profilePictureUrl: true,
+          role: true,
+          _count: {
+            select: {
+              assignedTasks: {
+                where: { task: { status: "COMPLETED" } }
+              }
+            }
+          }
+        },
+        orderBy: {
+          assignedTasks: { _count: "desc" }
+        },
+        take: 4
       }),
       prisma.task.findMany({
         orderBy: { updatedAt: "desc" },
@@ -127,19 +153,6 @@ export default async function DashboardPage() {
       }),
     ]);
 
-    const taskDistributionData = [
-      { name: "To Do", value: pendingTaskCount, color: "#94a3b8" },
-      { name: "In Progress", value: inProgressCount, color: "#6366f1" },
-      { name: "Review", value: reviewCount, color: "#8b5cf6" },
-      { name: "Done", value: doneCount, color: "#22c55e" },
-    ];
-
-    const employeeWorkloadData = usersWithTasks
-      .map((u) => ({
-        name: u.name.split(" ")[0],
-        tasks: u._count.assignedTasks,
-      }))
-      .filter((u) => u.tasks > 0);
 
     adminData = {
       employeeCount,
@@ -153,8 +166,8 @@ export default async function DashboardPage() {
       overdueTasks,
       upcomingDeadlineTasks,
       todayAttendanceCount,
-      taskDistributionData,
-      employeeWorkloadData,
+      topActiveProjects,
+      topPerformers,
       recentTaskUpdates,
       recentEmployees,
     };
@@ -487,31 +500,92 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* ── Row 3: Charts + Activity Feed ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
-            {/* Charts (2/3 width) */}
+            {/* Lists (2/3 width) */}
             <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
-                <CardHeader className="border-b border-slate-100 pb-4">
-                  <CardTitle className="flex items-center text-sm font-bold text-slate-800">
-                    <PieChartIcon className="w-4 h-4 mr-2 text-indigo-600" />
-                    Task Distribution
-                  </CardTitle>
+              {/* Top Active Projects */}
+              <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0 flex flex-col h-[380px]">
+                <CardHeader className="border-b border-slate-100 pb-3 pt-4 px-5 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center text-sm font-bold text-slate-800">
+                      <FolderKanban className="w-4 h-4 mr-2 text-indigo-500" />
+                      Top Active Projects
+                    </CardTitle>
+                    <Link href="/dashboard/projects" className="text-[10px] text-indigo-600 font-semibold hover:underline">View All</Link>
+                  </div>
                 </CardHeader>
-                <CardContent className="pt-6">
-                  <TaskDistributionChart data={adminData.taskDistributionData} />
+                <CardContent className="p-0 flex-1 overflow-y-auto">
+                  <div className="divide-y divide-slate-50">
+                    {adminData.topActiveProjects.map((project) => {
+                      const completed = project.tasks.filter(t => t.status === "COMPLETED").length;
+                      const total = project._count.tasks;
+                      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                      return (
+                        <Link key={project.id} href={`/dashboard/projects/${project.id}`}>
+                          <div className="px-5 py-4 hover:bg-slate-50 transition-colors group">
+                            <div className="flex justify-between items-start mb-2">
+                              <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-indigo-600">{project.name}</p>
+                              <span className="text-[10px] font-bold text-slate-500">{completed}/{total} tasks</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="h-1.5 rounded-full bg-indigo-500 transition-all duration-500" style={{ width: `${percent}%` }} />
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    {adminData.topActiveProjects.length === 0 && (
+                      <div className="p-6 text-center text-xs text-slate-400 font-medium">No active projects</div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0">
-                <CardHeader className="border-b border-slate-100 pb-4">
-                  <CardTitle className="flex items-center text-sm font-bold text-slate-800">
-                    <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
-                    Employee Workload
-                  </CardTitle>
+              {/* Top Performers */}
+              <Card className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm border-0 flex flex-col h-[380px]">
+                <CardHeader className="border-b border-slate-100 pb-3 pt-4 px-5 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center text-sm font-bold text-slate-800">
+                      <TrendingUp className="w-4 h-4 mr-2 text-emerald-500" />
+                      Top Performers
+                    </CardTitle>
+                    <Link href="/dashboard/employees" className="text-[10px] text-emerald-600 font-semibold hover:underline">View All</Link>
+                  </div>
                 </CardHeader>
-                <CardContent className="pt-6">
-                  <EmployeeWorkloadChart data={adminData.employeeWorkloadData} />
+                <CardContent className="p-0 flex-1 overflow-y-auto">
+                  <div className="divide-y divide-slate-50">
+                    {adminData.topPerformers.map((emp) => {
+                      const initials = emp.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+                      const completedTasks = emp._count.assignedTasks;
+                      return (
+                        <Link key={emp.id} href={`/dashboard/employees/${emp.id}/edit`}>
+                          <div className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                            <div className="flex items-center gap-3 min-w-0">
+                              {emp.profilePictureUrl ? (
+                                <img src={emp.profilePictureUrl} alt={emp.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 shrink-0" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
+                                  {initials}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-emerald-600">{emp.name}</p>
+                                <p className="text-[10px] text-slate-400 capitalize">{emp.role.toLowerCase().replace(/_/g, " ")}</p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0 ml-3">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-xs font-bold ring-1 ring-emerald-200">
+                                {completedTasks} <CheckSquare className="w-3 h-3 ml-1 opacity-70" />
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    {adminData.topPerformers.length === 0 && (
+                      <div className="p-6 text-center text-xs text-slate-400 font-medium">No tasks completed yet</div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -8,6 +8,16 @@ import * as faceapi from "face-api.js";
 import { uploadFileToServerAction } from "@/actions/upload.actions";
 import { Button } from "./ui/button";
 
+interface AttendanceRecord {
+  clockIn: string;
+  clockOut?: string;
+}
+
+interface AttendanceUser {
+  id: string;
+  profilePictureUrl?: string | null;
+}
+
 export function AttendanceTracker({ 
   todayRecord, 
   user,
@@ -26,12 +36,6 @@ export function AttendanceTracker({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const webcamRef = useRef<Webcam>(null);
 
-  useEffect(() => {
-    if (showCamera && !isModelsLoaded) {
-      loadModels();
-    }
-  }, [showCamera, isModelsLoaded]);
-
   const loadModels = async () => {
     try {
       await Promise.all([
@@ -45,6 +49,13 @@ export function AttendanceTracker({
       setErrorMsg("Failed to load facial recognition models. Please contact IT.");
     }
   };
+
+  useEffect(() => {
+    if (showCamera && !isModelsLoaded) {
+      loadModels();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCamera, isModelsLoaded]);
 
   const handleInitialClockInClick = () => {
     if (requireSelfieVerification) {
@@ -101,6 +112,7 @@ export function AttendanceTracker({
         const formData = new FormData();
         formData.append("file", blob, "selfie.jpeg");
 
+        // eslint-disable-next-line react-hooks/purity
         const fileName = `attendance-${user.id}-${Date.now()}.jpeg`;
         const filePath = `attendance-photos/${fileName}`;
 
@@ -109,8 +121,8 @@ export function AttendanceTracker({
 
       setShowCamera(false);
       doClockIn(photoUrl, isMatch);
-    } catch (err: any) {
-      setErrorMsg(err.message || "An error occurred during verification.");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "An error occurred during verification.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -221,7 +233,7 @@ export function AttendanceTracker({
             </Button>
             {!user.profilePictureUrl && isModelsLoaded && (
                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg text-center">
-                 You haven't uploaded a profile picture in Settings. Your selfie will be manually reviewed by Admin.
+                 You haven&apos;t uploaded a profile picture in Settings. Your selfie will be manually reviewed by Admin.
                </p>
             )}
           </div>
@@ -319,7 +331,7 @@ export function AttendanceTracker({
                 <span className="text-slate-500 text-xs font-medium flex items-center gap-1.5">
                   <LogOut className="w-3.5 h-3.5 text-rose-400" /> Clocked Out
                 </span>
-                <span className="font-bold text-slate-800 text-sm">{formatTime(todayRecord.clockOut)}</span>
+                <span className="font-bold text-slate-800 text-sm">{todayRecord.clockOut ? formatTime(todayRecord.clockOut as string) : ""}</span>
               </div>
             </div>
           </div>
