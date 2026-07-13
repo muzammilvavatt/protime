@@ -153,16 +153,24 @@ export function AttendanceTracker({
   };
 
   const handleClockOut = () => {
-    if (!window.confirm("Are you sure you want to clock out? You will not be able to clock back in today.")) {
-      return;
-    }
-    setErrorMsg(null);
-    startTransition(async () => {
-      const res = await clockOutAction();
-      if (res?.error) {
-        toast.error(res.error);
-      } else {
-        toast.success("Successfully clocked out! Great work today.");
+    toast("Confirm Clock Out", {
+      description: "Are you sure? You will not be able to clock back in today.",
+      action: {
+        label: "Yes, Clock Out",
+        onClick: () => {
+          setErrorMsg(null);
+          startTransition(async () => {
+            const res = await clockOutAction();
+            if (res?.error) {
+              toast.error(res.error);
+            } else {
+              toast.success("Successfully clocked out! Great work today.");
+            }
+          });
+        },
+      },
+      cancel: {
+        label: "Cancel",
       }
     });
   };
