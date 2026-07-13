@@ -32,7 +32,6 @@ export async function resetClockOutAction(attendanceId: string) {
   });
 
   revalidatePath("/dashboard/attendance");
-  return { success: true };
 }
 
 export async function clockInAction(
