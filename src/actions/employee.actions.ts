@@ -154,7 +154,7 @@ export async function adminDeleteEmployeePhotoAction(id: string) {
   await requireAdmin();
   
   const user = await prisma.user.findUnique({ where: { id } });
-  if (!user?.profilePictureUrl) return { error: "No profile picture to delete" };
+  if (!user?.profilePictureUrl) return;
 
   try {
     const urlParts = user.profilePictureUrl.split('/uploads/');
@@ -177,5 +177,4 @@ export async function adminDeleteEmployeePhotoAction(id: string) {
   });
 
   revalidatePath("/dashboard/employees");
-  return { success: true };
 }
