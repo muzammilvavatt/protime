@@ -3,6 +3,8 @@ import { getSession } from "@/lib/session";
 import { Sidebar } from "@/components/Sidebar";
 import { NotificationBell } from "@/components/NotificationBell";
 
+import { prisma } from "@/lib/prisma";
+
 // Page title mapping — cleaner than reading from child components
 const PAGE_LABELS: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -18,7 +20,10 @@ const PAGE_LABELS: Record<string, string> = {
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
   const isAdmin = session?.user?.role === "ADMIN";
-  const userName: string = (session?.user as any)?.name ?? (isAdmin ? "Admin" : "Employee");
+  
+  const dbUser = session?.user?.id ? await prisma.user.findUnique({ where: { id: session.user.id } }) : null;
+  const userName: string = dbUser?.name ?? (isAdmin ? "Admin" : "Employee");
+  const profilePictureUrl = dbUser?.profilePictureUrl;
   const initials = userName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
@@ -41,9 +46,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 {session?.user?.role?.replace(/_/g, " ")}
               </span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-white">
-              {initials}
-            </div>
+            {profilePictureUrl ? (
+              <img src={profilePictureUrl} alt={userName} className="w-9 h-9 rounded-full object-cover shadow-sm ring-2 ring-white" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-white">
+                {initials}
+              </div>
+            )}
           </div>
         </header>
 
