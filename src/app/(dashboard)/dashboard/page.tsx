@@ -118,7 +118,7 @@ export default async function DashboardPage() {
       }),
       // Top performers
       prisma.user.findMany({
-        where: { isActive: true },
+        where: { isActive: true, role: { not: "ADMIN" } },
         select: {
           id: true,
           name: true,
@@ -149,6 +149,7 @@ export default async function DashboardPage() {
         },
       }),
       prisma.user.findMany({
+        where: { role: { not: "ADMIN" } },
         orderBy: { createdAt: "desc" },
         take: 3,
         select: { id: true, name: true, createdAt: true, role: true },

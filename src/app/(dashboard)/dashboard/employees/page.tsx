@@ -11,6 +11,7 @@ export default async function EmployeesPage() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   const employees = await prisma.user.findMany({
+    where: { role: { not: "ADMIN" } },
     orderBy: { createdAt: "desc" },
   });
 

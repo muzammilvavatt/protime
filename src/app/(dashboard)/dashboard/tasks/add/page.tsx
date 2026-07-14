@@ -12,7 +12,7 @@ export default async function AddTaskPage() {
   });
 
   const employees = await prisma.user.findMany({
-    where: { isActive: true },
+    where: { isActive: true, role: { not: "ADMIN" } },
     orderBy: { name: "asc" }
   });
 
