@@ -88,9 +88,9 @@ export function AttendanceTracker({ todayRecord, user, requireSelfieVerification
             const distance = faceapi.euclideanDistance(refDetection.descriptor, capturedDetection.descriptor);
             console.log("Face Match Distance:", distance);
             
-            // VERY STRICT threshold. Default is 0.6. 
-            // 0.38 prevents almost all false positives.
-            if (distance < 0.45) {
+            // Recommended threshold is 0.6. 
+            // 0.45 was too strict for webcams with varying lighting.
+            if (distance < 0.6) {
               isMatch = true; // AI matched!
             }
           }
