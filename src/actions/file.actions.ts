@@ -40,9 +40,9 @@ export async function uploadFileAction(formData: FormData) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return { error: "Failed to upload file." };
+    return { error: `Failed to upload file: ${error.message}` };
   }
 
   revalidatePath("/dashboard/tasks");
