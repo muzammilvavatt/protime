@@ -63,7 +63,13 @@ export async function createEmployeeAction(prevState: any, formData: FormData) {
   }
 
   revalidatePath("/dashboard/employees");
-  redirect("/dashboard/employees");
+  revalidatePath("/dashboard/settings/admins");
+  
+  if (role === "ADMIN") {
+    redirect("/dashboard/settings/admins");
+  } else {
+    redirect("/dashboard/employees");
+  }
 }
 
 export async function toggleEmployeeStatus(id: string, currentStatus: boolean) {
@@ -86,7 +92,11 @@ export async function toggleEmployeeWFH(id: string, currentStatus: boolean) {
 
 export async function deleteEmployeeAction(id: string) {
   await requireAdmin();
-  
+  const session = await getSession();
+  if (session?.user?.id === id) {
+    throw new Error("You cannot delete your own account.");
+  }
+
   // 1. Fetch user to see if they have photos that need deleting
   const user = await prisma.user.findUnique({
     where: { id },
@@ -131,6 +141,7 @@ export async function deleteEmployeeAction(id: string) {
   });
   
   revalidatePath("/dashboard/employees");
+  revalidatePath("/dashboard/settings/admins");
 }
 
 export async function editEmployeeAction(id: string, prevState: any, formData: FormData) {
@@ -188,5 +199,11 @@ export async function editEmployeeAction(id: string, prevState: any, formData: F
   }
 
   revalidatePath("/dashboard/employees");
-  redirect("/dashboard/employees");
+  revalidatePath("/dashboard/settings/admins");
+  
+  if (role === "ADMIN") {
+    redirect("/dashboard/settings/admins");
+  } else {
+    redirect("/dashboard/employees");
+  }
 }

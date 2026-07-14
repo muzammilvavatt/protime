@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, FolderKanban, CheckSquare,
   Settings, LogOut, ChevronLeft, ChevronRight,
-  Menu, X, BriefcaseBusiness, FileText, Clock
+  Menu, X, BriefcaseBusiness, FileText, Clock, ShieldAlert
 } from "lucide-react";
 import { logoutAction } from "@/actions/auth.actions";
 
@@ -32,6 +32,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
     { href: "/dashboard/attendance",      label: "Attendance", icon: Clock,           adminOnly: true },
     { href: "/dashboard/reports",         label: "Reports",    icon: FileText,        adminOnly: true },
     { href: "/dashboard/settings/roles",  label: "Roles",      icon: BriefcaseBusiness, adminOnly: true },
+    { href: "/dashboard/settings/admins", label: "Administrators", icon: ShieldAlert, adminOnly: true },
     { href: "/dashboard/settings",        label: "Settings",   icon: Settings,        adminOnly: false, exact: true },
   ];
 
