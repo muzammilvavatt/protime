@@ -84,12 +84,9 @@ export default async function AdminsPage() {
                       </Button>
                     </Link>
                     {session.user?.id !== admin.id && (
-                      <DeleteButton
-                        id={admin.id}
-                        action={deleteEmployeeAction}
-                        title="Delete Administrator"
-                        description="Are you sure you want to remove this administrator? This action cannot be undone."
-                      />
+                      <form action={deleteEmployeeAction.bind(null, admin.id)}>
+                        <DeleteButton itemName="Administrator" />
+                      </form>
                     )}
                   </div>
                 </td>
