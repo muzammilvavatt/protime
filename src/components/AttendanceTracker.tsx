@@ -19,17 +19,10 @@ interface AttendanceUser {
   profilePictureUrl?: string | null;
 }
 
-export function AttendanceTracker({ 
-  todayRecord, 
-  user,
-  requireSelfieVerification 
-}: { 
-  todayRecord: any, 
-  user: any,
-  requireSelfieVerification: boolean 
-}) {
+export function AttendanceTracker({ todayRecord, user, requireSelfieVerification }: { todayRecord: any, user: any, requireSelfieVerification: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showClockOutModal, setShowClockOutModal] = useState(false);
   
   // Selfie State
   const [showCamera, setShowCamera] = useState(false);
@@ -153,25 +146,18 @@ export function AttendanceTracker({
   };
 
   const handleClockOut = () => {
-    toast("Confirm Clock Out", {
-      description: "Are you sure? You will not be able to clock back in today.",
-      action: {
-        label: "Yes, Clock Out",
-        onClick: () => {
-          setErrorMsg(null);
-          startTransition(async () => {
-            const res = await clockOutAction();
-            if (res?.error) {
-              toast.error(res.error);
-            } else {
-              toast.success("Successfully clocked out! Great work today.");
-            }
-          });
-        },
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => {}
+    setShowClockOutModal(true);
+  };
+
+  const confirmClockOut = () => {
+    setShowClockOutModal(false);
+    setErrorMsg(null);
+    startTransition(async () => {
+      const res = await clockOutAction();
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success("Successfully clocked out! Great work today.");
       }
     });
   };
@@ -360,6 +346,38 @@ export function AttendanceTracker({
           </div>
         )}
       </div>
+
+      {showClockOutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+            <div className="p-6">
+              <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center mb-4 ring-1 ring-rose-100">
+                <LogOut className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Confirm Clock Out</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Are you sure you want to clock out? You will not be able to clock back in today.
+              </p>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-100 flex gap-3">
+              <button
+                onClick={() => setShowClockOutModal(false)}
+                className="flex-1 px-4 py-2 bg-white ring-1 ring-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-400 outline-none"
+                disabled={isPending}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClockOut}
+                className="flex-1 px-4 py-2 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors flex justify-center items-center gap-2 focus:ring-2 focus:ring-rose-400 focus:ring-offset-1 outline-none shadow-sm"
+                disabled={isPending}
+              >
+                {isPending ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Clock Out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
