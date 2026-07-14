@@ -29,6 +29,8 @@ export default async function DashboardPage() {
   if (!session?.user?.id) return null;
 
   const isAdmin = session.user.role === "ADMIN";
+  const adminUser = isAdmin ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } }) : null;
+  const adminName = adminUser?.name?.split(" ")[0] || "Admin";
 
   // --- ADMIN DATA FETCHING ---
   let adminData = null;
@@ -276,7 +278,7 @@ export default async function DashboardPage() {
             <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-50 to-transparent rounded-bl-full pointer-events-none" />
             <div className="relative z-10">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                {greeting}, {session.user.name.split(" ")[0]} 👋
+                {greeting}, {adminName} 👋
               </h1>
               <p className="text-sm text-slate-500 mt-0.5">{todayLabel}</p>
             </div>
