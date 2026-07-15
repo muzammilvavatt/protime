@@ -22,7 +22,7 @@ export async function createEmployeeAction(prevState: any, formData: FormData) {
 
   const name = formData.get("name") as string;
   const phoneNumber = formData.get("phoneNumber") as string;
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.toLowerCase().trim();
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
   const projectRoles = formData.getAll("projectRoles") as string[];
@@ -152,7 +152,7 @@ export async function editEmployeeAction(id: string, prevState: any, formData: F
   }
 
   const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.toLowerCase().trim();
   const phoneNumber = formData.get("phoneNumber") as string;
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
